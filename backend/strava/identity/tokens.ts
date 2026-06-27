@@ -12,14 +12,14 @@ export async function getAccessTokenFromUser(
 ) {
   const now = new Date()
   const refreshAt = new Date(
-    user.accessTokenExpiresAt.getTime() - refreshBuffer,
+    user.access_token_expires_at.getTime() - refreshBuffer,
   )
 
   if (now > refreshAt) {
     const refreshToken = decrypt(
-      user.refreshToken,
-      user.refreshTokenTag,
-      user.refreshTokenIv,
+      user.refresh_token,
+      user.refresh_token_tag,
+      user.refresh_token_iv,
     )
 
     const tokenData = await makeRequest<{
@@ -54,16 +54,16 @@ export async function getAccessTokenFromUser(
     } = encrypt(refresh_token)
 
     await updateUser(user.id, {
-      refreshToken: newRefreshToken,
-      refreshTokenTag: newRefreshTokenTag,
-      refreshTokenIv: newRefreshTokenIv,
-      accessToken: newAccessToken,
-      accessTokenTag: newAccessTokenTag,
-      accessTokenIv: newAccessTokenIv,
-      accessTokenExpiresAt: new Date(expires_at),
+      refresh_token: newRefreshToken,
+      refresh_token_tag: newRefreshTokenTag,
+      refresh_token_iv: newRefreshTokenIv,
+      access_token: newAccessToken,
+      access_token_tag: newAccessTokenTag,
+      access_token_iv: newAccessTokenIv,
+      access_token_expires_at: new Date(expires_at),
     })
     return access_token
   }
 
-  return decrypt(user.accessToken, user.accessTokenTag, user.accessTokenIv)
+  return decrypt(user.access_token, user.access_token_tag, user.access_token_iv)
 }

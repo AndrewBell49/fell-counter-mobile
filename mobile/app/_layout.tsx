@@ -1,12 +1,15 @@
-import { Slot } from "expo-router"
 import SafeScreen from "@/components/SafeScreen"
+import { DatabaseProvider } from "@/context/DatabaseContext"
 import { UserProvider } from "@/context/UserContext"
+import { Slot } from "expo-router"
 
 export default function RootLayout() {
   return (
     <SafeScreen>
       <UserProvider>
-        <Slot />
+        <DatabaseProvider>
+          <Slot />
+        </DatabaseProvider>
       </UserProvider>
     </SafeScreen>
   )

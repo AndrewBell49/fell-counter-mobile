@@ -4,26 +4,37 @@ import {
   pgTable,
   timestamp,
   boolean,
+  pgView,
 } from "drizzle-orm/pg-core"
 import { fells } from "./fells"
 import { users } from "./users"
 import { activities } from "./activities"
+import { eq } from "drizzle-orm"
+import { db } from ".."
 
 export const bags = pgTable("bags", {
   id: integer().notNull().primaryKey().generatedAlwaysAsIdentity(),
-  fellId: integer()
+  fell_id: integer()
     .notNull()
     .references(() => fells.id),
-  userId: integer()
+  user_id: integer()
     .notNull()
     .references(() => users.id),
-  activityId: bigint({ mode: "number" })
+  activity_id: bigint({ mode: "number" })
     .notNull()
     .references(() => activities.id),
-  bagDate: timestamp().notNull(),
-  updatedAt: timestamp().notNull().defaultNow(),
+  bag_date: timestamp().notNull(),
+  updated_at: timestamp().notNull().defaultNow(),
   active: boolean().notNull().default(true),
 })
 
 export type Bag = typeof bags.$inferSelect
 export type NewBag = typeof bags.$inferInsert
+
+export const activeBags = pgView("active_bags").as(
+  db.select().from(bags).where(eq(bags.active, true)),
+)
+
+export const inactiveBags = pgView("inactive_bags").as(
+  db.select().from(bags).where(eq(bags.active, false)),
+)

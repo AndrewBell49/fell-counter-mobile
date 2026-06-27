@@ -1,12 +1,8 @@
 import * as SQLite from "expo-sqlite"
 import { DB_NAME, DB_TYPE } from "./constants"
 
-const getDb = () => SQLite.openDatabaseAsync(DB_NAME)
-
-export async function setupDatabase(
-  setDb: React.Dispatch<React.SetStateAction<DB_TYPE>>,
-) {
-  const db = await getDb()
+export async function setupDatabase(): Promise<SQLite.SQLiteDatabase> {
+  const db = await SQLite.openDatabaseAsync(DB_NAME)
   await db.execAsync(`
     CREATE TABLE IF NOT EXISTS fells (
       id INTEGER PRIMARY KEY,
@@ -47,7 +43,7 @@ export async function setupDatabase(
     );
     `)
 
-  setDb(db)
+  return db
 }
 
 export function requireDb(db: DB_TYPE): asserts db is NonNullable<DB_TYPE> {

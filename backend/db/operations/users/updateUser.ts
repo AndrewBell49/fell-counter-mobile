@@ -8,6 +8,6 @@ export async function updateUser(
 ) {
   await db
     .update(users)
-    .set({ ...updatedUser, updatedAt: new Date() })
+    .set({ ...updatedUser, updated_at: new Date() })
     .where(eq(users.id, userId))
 }

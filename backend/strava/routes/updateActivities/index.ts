@@ -4,14 +4,19 @@ import { getAllUncheckedActivities } from "../../../db/operations/activities/sel
 import { getError } from "../../../lib/errors/errorMessage"
 import { User } from "../../../db/schema/users"
 import { activeJobs } from "../../../lib/jobs/activeJobs"
+import { updateUser } from "../../../db/operations/users/updateUser"
 
 const BATCH_DOWNLOAD = 10
 
 export async function updateActivities(user: User) {
   try {
-    await saveAndGetActivityInfo(user)
+    const { fullRefresh } = await saveAndGetActivityInfo(user)
 
     const activities = await getAllUncheckedActivities(user.id)
+
+    if (fullRefresh) {
+      updateUser(user.id, { last_full_refresh: new Date() })
+    }
 
     for (let i = 0; i < activities.length; i += BATCH_DOWNLOAD) {
       const batch = activities.slice(i, i + BATCH_DOWNLOAD)
@@ -21,7 +26,7 @@ export async function updateActivities(user: User) {
           const fellIds = await saveBagsFromActivity(
             user,
             activity.id,
-            activity.startDate,
+            activity.start_date,
           )
 
           const indexPadded = i
@@ -34,11 +39,11 @@ export async function updateActivities(user: User) {
       )
     }
 
-    activeJobs.set(user.sessionId, { status: "completed" })
+    activeJobs.set(user.session_id, { status: "completed" })
   } catch (err) {
     console.log(getError(err).message)
-    activeJobs.set(user.sessionId, { status: "failed" })
+    activeJobs.set(user.session_id, { status: "failed" })
   } finally {
-    setTimeout(() => activeJobs.delete(user.sessionId), 10 * 60 * 1000)
+    setTimeout(() => activeJobs.delete(user.session_id), 10 * 60 * 1000)
   }
 }

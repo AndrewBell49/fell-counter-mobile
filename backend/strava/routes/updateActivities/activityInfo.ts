@@ -20,10 +20,11 @@ export async function saveAndGetActivityInfo(user: User) {
     perPage: PER_PAGE,
   }
   const fullRefresh =
-    new Date().getTime() - user.lastFullRefresh.getTime() > FULL_REFRESH_EVERY
+    new Date().getTime() - user.last_full_refresh.getTime() > FULL_REFRESH_EVERY
 
   // only search after most recent activity, except every FULL_REFRESH_EVERY ms
   if (!fullRefresh) {
+    console.log("Starting full refresh")
     params = { ...params, after: Math.round(maxDate.getTime() / 1000) }
   }
 
@@ -38,24 +39,36 @@ export async function saveAndGetActivityInfo(user: User) {
       },
     )
 
-    response.data.forEach(async (data) => {
-      const activity: NewActivity = {
-        id: data.id,
-        userId: user.id,
-        name: data.name,
-        distance: data.distance,
-        movingTime: data.moving_time,
-        elapsedTime: data.elapsed_time,
-        elevation: data.total_elevation_gain,
-        sport: data.sport_type,
-        startDate: new Date(data.start_date),
-        startLat: data.start_latlng[0],
-        startLong: data.start_latlng[1],
-      }
-      console.log(`Inserting activity: ${data.name}`)
-      const insertedActivities = await insertActivity(activity)
-      activityIds.push(...insertedActivities)
-    })
+    response.data.forEach(
+      async (data: {
+        id: any
+        name: any
+        distance: any
+        moving_time: any
+        elapsed_time: any
+        total_elevation_gain: any
+        sport_type: any
+        start_date: string | number | Date
+        start_latlng: any[]
+      }) => {
+        const activity: NewActivity = {
+          id: data.id,
+          user_id: user.id,
+          name: data.name,
+          distance: data.distance,
+          moving_time: data.moving_time,
+          elapsed_time: data.elapsed_time,
+          elevation: data.total_elevation_gain,
+          sport: data.sport_type,
+          start_date: new Date(data.start_date),
+          start_lat: data.start_latlng[0],
+          start_long: data.start_latlng[1],
+        }
+        console.log(`Inserting activity: ${data.name}`)
+        const insertedActivities = await insertActivity(activity)
+        activityIds.push(...insertedActivities)
+      },
+    )
 
     if (response.data.length == 0) {
       dataGot = false
@@ -64,5 +77,5 @@ export async function saveAndGetActivityInfo(user: User) {
 
     page++
   }
-  return activityIds
+  return { activityIds, fullRefresh }
 }

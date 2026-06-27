@@ -8,6 +8,10 @@ export async function updateActivity(
 ) {
   await db
     .update(activities)
-    .set({ ...updatedActivity, updatedAt: new Date(), checkedDate: new Date() })
+    .set({
+      ...updatedActivity,
+      updated_at: new Date(),
+      checked_date: new Date(),
+    })
     .where(eq(activities.id, activityId))
 }

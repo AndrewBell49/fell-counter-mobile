@@ -4,7 +4,7 @@ import { ROW_RETURN_LIMIT } from "../../../lib/constants"
 import {
   activeClassifications,
   inactiveClassifications,
-} from "../../schema/activeClassifications"
+} from "../../schema/classifications"
 
 export async function getAllActiveClassifications(
   page: number | undefined,
@@ -20,8 +20,8 @@ export async function getAllActiveClassifications(
     .from(activeClassifications)
     .where(
       and(
-        gte(activeClassifications.updatedAt, startDate),
-        lt(activeClassifications.updatedAt, endDate),
+        gte(activeClassifications.updated_at, startDate),
+        lt(activeClassifications.updated_at, endDate),
       ),
     )
     .orderBy(activeClassifications.id)
@@ -43,8 +43,8 @@ export async function getAllInactiveClassifications(
     .from(inactiveClassifications)
     .where(
       and(
-        gte(inactiveClassifications.updatedAt, startDate),
-        lt(inactiveClassifications.updatedAt, endDate),
+        gte(inactiveClassifications.updated_at, startDate),
+        lt(inactiveClassifications.updated_at, endDate),
       ),
     )
     .orderBy(inactiveClassifications.id)

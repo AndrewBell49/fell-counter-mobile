@@ -4,7 +4,7 @@ import { ROW_RETURN_LIMIT } from "../../../lib/constants"
 import {
   activeFellClassifications,
   inactiveFellClassifications,
-} from "../../schema/activeFellClassifications"
+} from "../../schema/fellClassifications"
 import { bags } from "../../schema/bags"
 
 export async function getAllActiveFellClassifications(
@@ -15,21 +15,21 @@ export async function getAllActiveFellClassifications(
 ) {
   return await db
     .selectDistinct({
-      fellId: activeFellClassifications.fellId,
-      classificationId: activeFellClassifications.classificationId,
+      fell_id: activeFellClassifications.fell_id,
+      classification_id: activeFellClassifications.classification_id,
     })
     .from(activeFellClassifications)
-    .innerJoin(bags, eq(activeFellClassifications.fellId, bags.fellId))
+    .innerJoin(bags, eq(activeFellClassifications.fell_id, bags.fell_id))
     .where(
       and(
-        gte(activeFellClassifications.updatedAt, startDate),
-        lt(activeFellClassifications.updatedAt, endDate),
-        eq(bags.userId, userId),
+        gte(activeFellClassifications.updated_at, startDate),
+        lt(activeFellClassifications.updated_at, endDate),
+        eq(bags.user_id, userId),
       ),
     )
     .orderBy(
-      activeFellClassifications.fellId,
-      activeFellClassifications.classificationId,
+      activeFellClassifications.fell_id,
+      activeFellClassifications.classification_id,
     )
     .limit(ROW_RETURN_LIMIT)
     .offset((page ?? 0) * ROW_RETURN_LIMIT)
@@ -43,21 +43,21 @@ export async function getAllInactiveFellClassifications(
 ) {
   return await db
     .selectDistinct({
-      fellId: inactiveFellClassifications.fellId,
-      classificationId: inactiveFellClassifications.classificationId,
+      fell_id: inactiveFellClassifications.fell_id,
+      classification_id: inactiveFellClassifications.classification_id,
     })
     .from(inactiveFellClassifications)
-    .innerJoin(bags, eq(inactiveFellClassifications.fellId, bags.fellId))
+    .innerJoin(bags, eq(inactiveFellClassifications.fell_id, bags.fell_id))
     .where(
       and(
-        gte(inactiveFellClassifications.updatedAt, startDate),
-        lt(inactiveFellClassifications.updatedAt, endDate),
-        eq(bags.userId, userId),
+        gte(inactiveFellClassifications.updated_at, startDate),
+        lt(inactiveFellClassifications.updated_at, endDate),
+        eq(bags.user_id, userId),
       ),
     )
     .orderBy(
-      inactiveFellClassifications.fellId,
-      inactiveFellClassifications.classificationId,
+      inactiveFellClassifications.fell_id,
+      inactiveFellClassifications.classification_id,
     )
     .limit(ROW_RETURN_LIMIT)
     .offset((page ?? 0) * ROW_RETURN_LIMIT)

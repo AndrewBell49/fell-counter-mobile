@@ -1,18 +1,18 @@
+import { DatabaseContext } from "@/context/DatabaseContext"
 import {
   Activity,
   Bag,
   Classification,
   Fell,
   FellClassification,
-} from "@/services/db/schema"
+} from "@/services/db/sqlite/schema"
 import { ApiError } from "@/services/errors/apiError"
 import { getError } from "@/services/errors/errorMessage"
 import { getItem, saveItem } from "@/services/storage/storage"
 import { SERVER_URL } from "@/services/strava/constants"
 import { getUpdateData } from "@/services/strava/updateData"
-import { useState } from "react"
+import { useContext, useState } from "react"
 import { useApi } from "./useApi"
-import { useDatabase } from "./useDatabase"
 
 type Status = "idle" | "running" | "completed" | "failed"
 
@@ -22,18 +22,7 @@ export function useUpdateActivities() {
   const [status, setStatus] = useState<Status>("idle")
   const [error, setError] = useState<null | string>(null)
   const { request } = useApi()
-  const {
-    insertActivities,
-    removeActivities,
-    insertBags,
-    removeBags,
-    insertClassifications,
-    removeClassifications,
-    insertFellClassifications,
-    removeFellClassifications,
-    insertFells,
-    removeFells,
-  } = useDatabase()
+  const { database, isReady } = useContext(DatabaseContext)
 
   async function pollStatus() {
     try {
@@ -75,7 +64,7 @@ export function useUpdateActivities() {
   }
 
   const updateDatabaseData = async () => {
-    if (status != "completed") return
+    if (status != "completed" || !database) return
     setError(null)
 
     try {
@@ -117,20 +106,24 @@ export function useUpdateActivities() {
 
       try {
         // Remove children first
-        await removeBags(bags.removedItems.map((i) => i.id))
-        await removeFellClassifications(fellClassifications.removedItems)
-        await removeActivities(activities.removedItems.map((i) => i.id))
-        await removeClassifications(
+        await database.removeBags(bags.removedItems.map((i) => i.id))
+        await database.removeFellClassifications(
+          fellClassifications.removedItems,
+        )
+        await database.removeActivities(
+          activities.removedItems.map((i) => i.id),
+        )
+        await database.removeClassifications(
           classifications.removedItems.map((i) => i.id),
         )
-        await removeFells(fells.removedItems.map((i) => i.id))
+        await database.removeFells(fells.removedItems.map((i) => i.id))
 
         // Insert parents first
-        await insertFells(fells.items)
-        await insertClassifications(classifications.items)
-        await insertActivities(activities.items)
-        await insertFellClassifications(fellClassifications.items)
-        await insertBags(bags.items)
+        await database.insertFells(fells.items)
+        await database.insertClassifications(classifications.items)
+        await database.insertActivities(activities.items)
+        await database.insertFellClassifications(fellClassifications.items)
+        await database.insertBags(bags.items)
       } catch (err) {
         setError("Failed to save data — please try again")
         return // don't save lastUpdated if writes failed
@@ -142,5 +135,5 @@ export function useUpdateActivities() {
     }
   }
 
-  return { trigger, updateDatabaseData, status, error }
+  return { trigger, updateDatabaseData, status, error, isReady }
 }

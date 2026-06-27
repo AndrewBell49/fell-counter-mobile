@@ -46,22 +46,22 @@ export async function getCallback(req: Request, res: Response) {
 
     const newUser: NewUser = {
       id: athlete.id,
-      firstName: athlete.firstname,
-      lastName: athlete.lastname,
+      first_name: athlete.firstname,
+      last_name: athlete.lastname,
       city: athlete.city,
       state: athlete.state,
       country: athlete.country,
 
-      refreshToken: refreshTokenEncrypted.cipherText,
-      refreshTokenTag: refreshTokenEncrypted.tag,
-      refreshTokenIv: refreshTokenEncrypted.iv,
+      refresh_token: refreshTokenEncrypted.cipherText,
+      refresh_token_tag: refreshTokenEncrypted.tag,
+      refresh_token_iv: refreshTokenEncrypted.iv,
 
-      accessToken: accessTokenEncrypted.cipherText,
-      accessTokenTag: accessTokenEncrypted.tag,
-      accessTokenIv: accessTokenEncrypted.iv,
-      accessTokenExpiresAt: new Date(expires_at * 1000),
+      access_token: accessTokenEncrypted.cipherText,
+      access_token_tag: accessTokenEncrypted.tag,
+      access_token_iv: accessTokenEncrypted.iv,
+      access_token_expires_at: new Date(expires_at * 1000),
 
-      sessionId: sessionId,
+      session_id: sessionId,
     }
 
     const user = (await insertUser(newUser))[0]
@@ -74,7 +74,7 @@ export async function getCallback(req: Request, res: Response) {
     }
     // Only send session ID and basic info back to app
     res.redirect(
-      `${redirectUrlBase}?sessionId=${user.sessionId}&name=${encodeURIComponent(user.firstName + " " + user.lastName)}&id=${user.id}`,
+      `${redirectUrlBase}?sessionId=${user.session_id}&name=${encodeURIComponent(user.first_name + " " + user.last_name)}&id=${user.id}`,
     )
   } catch (err) {
     if (axios.isAxiosError(err)) {

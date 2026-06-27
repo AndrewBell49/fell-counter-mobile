@@ -5,6 +5,6 @@ import { Fell, fells } from "../../schema/fells"
 export async function updateFell(fellId: number, updatedFell: Partial<Fell>) {
   await db
     .update(fells)
-    .set({ ...updatedFell, updatedAt: new Date() })
+    .set({ ...updatedFell, updated_at: new Date() })
     .where(eq(fells.id, fellId))
 }

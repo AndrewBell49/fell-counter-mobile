@@ -1,7 +1,7 @@
 import { eq, and, gte, lt } from "drizzle-orm"
 import { db } from "../.."
 import { ROW_RETURN_LIMIT } from "../../../lib/constants"
-import { activeBags, inactiveBags } from "../../schema/activeBags"
+import { activeBags, inactiveBags } from "../../schema/bags"
 
 export async function getAllActiveBags(
   userId: number,
@@ -12,16 +12,16 @@ export async function getAllActiveBags(
   return await db
     .select({
       id: activeBags.id,
-      activityId: activeBags.activityId,
-      bagDate: activeBags.bagDate,
-      fellId: activeBags.fellId,
+      activity_id: activeBags.activity_id,
+      bag_date: activeBags.bag_date,
+      fell_id: activeBags.fell_id,
     })
     .from(activeBags)
     .where(
       and(
-        eq(activeBags.userId, userId),
-        gte(activeBags.updatedAt, startDate),
-        lt(activeBags.updatedAt, endDate),
+        eq(activeBags.user_id, userId),
+        gte(activeBags.updated_at, startDate),
+        lt(activeBags.updated_at, endDate),
       ),
     )
     .orderBy(activeBags.id)
@@ -38,16 +38,16 @@ export async function getAllInactiveBags(
   return await db
     .select({
       id: activeBags.id,
-      activityId: activeBags.activityId,
-      bagDate: activeBags.bagDate,
-      fellId: activeBags.fellId,
+      activity_id: activeBags.activity_id,
+      bag_date: activeBags.bag_date,
+      fell_id: activeBags.fell_id,
     })
     .from(inactiveBags)
     .where(
       and(
-        eq(inactiveBags.userId, userId),
-        gte(inactiveBags.updatedAt, startDate),
-        lt(inactiveBags.updatedAt, endDate),
+        eq(inactiveBags.user_id, userId),
+        gte(inactiveBags.updated_at, startDate),
+        lt(inactiveBags.updated_at, endDate),
       ),
     )
     .orderBy(inactiveBags.id)

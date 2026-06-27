@@ -1,11 +1,11 @@
 import { db } from "../.."
 import { eq, min, max, and, isNull, gte, lt } from "drizzle-orm"
-import { Activity } from "../../schema/activities"
-import { ROW_RETURN_LIMIT } from "../../../lib/constants"
 import {
   activeActivities,
   inactiveActivities,
-} from "../../schema/activeActivities"
+  Activity,
+} from "../../schema/activities"
+import { ROW_RETURN_LIMIT } from "../../../lib/constants"
 
 interface GetMinMaxActivityDateParams {
   maxDate: Date
@@ -17,11 +17,11 @@ export async function getMinMaxActivityDate(
 ): Promise<GetMinMaxActivityDateParams> {
   const result = await db
     .select({
-      minDate: min(activeActivities.startDate),
-      maxDate: max(activeActivities.startDate),
+      minDate: min(activeActivities.start_date),
+      maxDate: max(activeActivities.start_date),
     })
     .from(activeActivities)
-    .where(eq(activeActivities.userId, userId))
+    .where(eq(activeActivities.user_id, userId))
 
   // default to the most extreme, if no activities found
   if (result.length == 0) {
@@ -40,30 +40,29 @@ export async function getAllActiveActivities(
   startDate: Date,
   endDate: Date,
 ) {
-  const result = await db
+  return await db
     .select({
       id: activeActivities.id,
       name: activeActivities.name,
       distance: activeActivities.distance,
-      elapsedTime: activeActivities.elapsedTime,
+      elapsedTime: activeActivities.elapsed_time,
       elevation: activeActivities.elevation,
       sport: activeActivities.sport,
-      movingTime: activeActivities.movingTime,
-      startDate: activeActivities.startDate,
+      movingTime: activeActivities.moving_time,
+      startDate: activeActivities.start_date,
     })
     .from(activeActivities)
     .where(
       and(
-        eq(activeActivities.userId, userId),
-        gte(activeActivities.updatedAt, startDate),
-        lt(activeActivities.updatedAt, endDate),
+        eq(activeActivities.user_id, userId),
+        eq(activeActivities.active, true),
+        gte(activeActivities.updated_at, startDate),
+        lt(activeActivities.updated_at, endDate),
       ),
     )
     .orderBy(activeActivities.id)
     .limit(ROW_RETURN_LIMIT)
     .offset((page ?? 0) * ROW_RETURN_LIMIT)
-
-  return result
 }
 
 export async function getAllInactiveActivities(
@@ -74,21 +73,21 @@ export async function getAllInactiveActivities(
 ) {
   const result = await db
     .select({
-      id: activeActivities.id,
-      name: activeActivities.name,
-      distance: activeActivities.distance,
-      elapsedTime: activeActivities.elapsedTime,
-      elevation: activeActivities.elevation,
-      sport: activeActivities.sport,
-      movingTime: activeActivities.movingTime,
-      startDate: activeActivities.startDate,
+      id: inactiveActivities.id,
+      name: inactiveActivities.name,
+      distance: inactiveActivities.distance,
+      elapsedTime: inactiveActivities.elapsed_time,
+      elevation: inactiveActivities.elevation,
+      sport: inactiveActivities.sport,
+      movingTime: inactiveActivities.moving_time,
+      startDate: inactiveActivities.start_date,
     })
     .from(inactiveActivities)
     .where(
       and(
-        eq(inactiveActivities.userId, userId),
-        gte(inactiveActivities.updatedAt, startDate),
-        lt(inactiveActivities.updatedAt, endDate),
+        eq(inactiveActivities.user_id, userId),
+        gte(inactiveActivities.updated_at, startDate),
+        lt(inactiveActivities.updated_at, endDate),
       ),
     )
     .orderBy(inactiveActivities.id)
@@ -106,8 +105,8 @@ export async function getAllUncheckedActivities(
     .from(activeActivities)
     .where(
       and(
-        eq(activeActivities.userId, userId),
-        isNull(activeActivities.checkedDate),
+        eq(activeActivities.user_id, userId),
+        isNull(activeActivities.checked_date),
       ),
     )
 

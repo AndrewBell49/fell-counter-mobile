@@ -28,7 +28,7 @@ export async function saveBagsFromActivity(
   const data = await response.json()
   const latLng = data.latlng
   if (!latLng) {
-    await updateActivity(activityId, { checkedDate: new Date() })
+    await updateActivity(activityId, { checked_date: new Date() })
     return new Set<number>()
   }
 
@@ -66,10 +66,10 @@ export async function saveBagsFromActivity(
       pointFells.forEach((pointFell) => {
         const bagDate = new Date(activityStartDate.getTime() + time * 1000)
         bags.push({
-          fellId: pointFell.id,
-          userId: user.id,
-          activityId: activityId,
-          bagDate: bagDate,
+          fell_id: pointFell.id,
+          user_id: user.id,
+          activity_id: activityId,
+          bag_date: bagDate,
         })
       })
     }),
@@ -77,16 +77,18 @@ export async function saveBagsFromActivity(
 
   await Promise.all(
     bags.map(async (bag) => {
-      if (!fellIds.has(bag.fellId)) {
-        fellIds.add(bag.fellId)
+      if (!fellIds.has(bag.fell_id)) {
+        fellIds.add(bag.fell_id)
 
         const [bagInserted] = await insertBag(bag)
         if (bagInserted) {
           const fellName =
-            (await getFellFromId(bagInserted.fellId))?.name ||
-            bagInserted.fellId.toString()
+            (await getFellFromId(bagInserted.fell_id))?.name ||
+            bagInserted.fell_id.toString()
 
-          console.log(`Found bag of fell ${fellName} at ${bagInserted.bagDate}`)
+          console.log(
+            `Found bag of fell ${fellName} at ${bagInserted.bag_date}`,
+          )
         } else {
           console.error(
             `Error inserting bag: ${JSON.stringify(bag)} - didn't insert anything`,
@@ -95,7 +97,7 @@ export async function saveBagsFromActivity(
       }
     }),
   )
-  await updateActivity(activityId, { checkedDate: new Date() })
+  await updateActivity(activityId, { checked_date: new Date() })
 
   return fellIds
 }

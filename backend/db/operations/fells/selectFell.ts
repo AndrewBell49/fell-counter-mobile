@@ -1,9 +1,8 @@
 import { db } from "../.."
 import { between, and, eq, inArray, gte, lt, or } from "drizzle-orm"
 import { ROW_RETURN_LIMIT } from "../../../lib/constants"
-import { activeFells, inactiveFells } from "../../schema/activeFells"
-import { activeBags } from "../../schema/activeBags"
-import { Fell } from "../../schema/fells"
+import { Fell, activeFells, inactiveFells } from "../../schema/fells"
+import { activeBags } from "../../schema/bags"
 import { bags } from "../../schema/bags"
 
 interface getFellsInRangeParams {
@@ -55,21 +54,21 @@ export async function getAllActiveUserFells(
 ) {
   // Fells newly bagged since last sync
   const newlyBaggedSubquery = db
-    .selectDistinct({ fellId: activeBags.fellId })
+    .selectDistinct({ fell_id: activeBags.fell_id })
     .from(activeBags)
     .where(
       and(
-        eq(activeBags.userId, userId),
-        gte(activeBags.updatedAt, startDate),
-        lt(activeBags.updatedAt, endDate),
+        eq(activeBags.user_id, userId),
+        gte(activeBags.updated_at, startDate),
+        lt(activeBags.updated_at, endDate),
       ),
     )
 
   // All fells the user has ever bagged (for catching fell data updates)
   const allBaggedSubquery = db
-    .selectDistinct({ fellId: activeBags.fellId })
+    .selectDistinct({ fell_id: activeBags.fell_id })
     .from(activeBags)
-    .where(eq(activeBags.userId, userId))
+    .where(eq(activeBags.user_id, userId))
 
   const result = await db
     .select({
@@ -87,8 +86,8 @@ export async function getAllActiveUserFells(
         or(
           // Either the fell data itself changed
           and(
-            gte(activeFells.updatedAt, startDate),
-            lt(activeFells.updatedAt, endDate),
+            gte(activeFells.updated_at, startDate),
+            lt(activeFells.updated_at, endDate),
           ),
           // Or it was newly bagged
           inArray(activeFells.id, newlyBaggedSubquery),
@@ -110,9 +109,9 @@ export async function getAllInactiveUserFells(
   endDate: Date,
 ) {
   const allBaggedFellIdsSubquery = db
-    .selectDistinct({ fellId: bags.fellId })
+    .selectDistinct({ fell_id: bags.fell_id })
     .from(bags)
-    .where(eq(bags.userId, userId)) // no date filter - all bags ever
+    .where(eq(bags.user_id, userId)) // no date filter - all bags ever
 
   const result = await db
     .select({
@@ -127,8 +126,8 @@ export async function getAllInactiveUserFells(
     .where(
       and(
         inArray(inactiveFells.id, allBaggedFellIdsSubquery),
-        gte(inactiveFells.updatedAt, startDate),
-        lt(inactiveFells.updatedAt, endDate),
+        gte(inactiveFells.updated_at, startDate),
+        lt(inactiveFells.updated_at, endDate),
       ),
     )
     .orderBy(inactiveFells.id)
