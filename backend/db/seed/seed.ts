@@ -33,9 +33,9 @@ const classificationsSqlite = sqliteTable("classifications", {
   description: text().notNull(),
 })
 
-const fellClassificationsSqlite = sqliteTable("fellClassifications", {
-  fellId: integer().notNull(),
-  classificationId: integer().notNull(),
+const fellClassificationsSqlite = sqliteTable("fell_classifications", {
+  fell_id: integer().notNull(),
+  classification_id: integer().notNull(),
 })
 
 const BATCH_SIZE = 500

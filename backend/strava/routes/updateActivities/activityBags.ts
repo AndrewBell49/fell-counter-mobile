@@ -8,10 +8,19 @@ import { NewBag } from "../../../db/schema/bags"
 import { User } from "../../../db/schema/users"
 import { getAccessTokenFromUser } from "../../identity/tokens"
 import { getMaxMinLatLon } from "../../../lib/geo/latLon"
+import { haversineDistance } from "../../../lib/geo/distance"
 
 const CHECK_N_POINTS = 5
 const CHECK_N_SECONDS = 5
 const DISTANCE_TO_COUNT = 40
+const DISTANCE_TO_EXIT = 300
+
+type FellBagState = {
+  bagCount: number
+  hasExited: boolean
+  summitLat: number
+  summitLon: number
+}
 
 export async function saveBagsFromActivity(
   user: User,
@@ -35,8 +44,11 @@ export async function saveBagsFromActivity(
   const points = latLng.data
   const times = data.time.data
 
-  const bags: NewBag[] = []
   const fellIds = new Set<number>()
+  const bags: NewBag[] = []
+
+  // Tracks per-fell state across the whole activity
+  const fellBagStates = new Map<number, FellBagState>()
 
   const sampledPoints: { lat: number; lon: number; time: number }[] = points
     .map(([lat, lon]: [number, number], i: number) => ({
@@ -51,53 +63,85 @@ export async function saveBagsFromActivity(
       return everyNPoints || everyNSeconds
     })
 
-  await Promise.all(
-    sampledPoints.map(async ({ lat, lon, time }) => {
-      const { minLatitude, maxLatitude, minLongitude, maxLongitude } =
-        getMaxMinLatLon(lat, lon, DISTANCE_TO_COUNT)
+  // Process points sequentially to track exit state over time
+  for (const { lat, lon, time } of sampledPoints) {
+    const { minLatitude, maxLatitude, minLongitude, maxLongitude } =
+      getMaxMinLatLon(lat, lon, DISTANCE_TO_COUNT)
 
-      const pointFells = await getFellsInRange({
-        minLatitude,
-        maxLatitude,
-        minLongitude,
-        maxLongitude,
-      })
+    const pointFells = await getFellsInRange({
+      minLatitude,
+      maxLatitude,
+      minLongitude,
+      maxLongitude,
+    })
 
-      pointFells.forEach((pointFell) => {
-        const bagDate = new Date(activityStartDate.getTime() + time * 1000)
+    // Update exit state for all previously bagged fells
+    for (const [_, state] of fellBagStates.entries()) {
+      if (!state.hasExited) {
+        const distFromSummit = haversineDistance(
+          lat,
+          lon,
+          state.summitLat,
+          state.summitLon,
+        )
+        if (distFromSummit >= DISTANCE_TO_EXIT) {
+          state.hasExited = true
+        }
+      }
+    }
+
+    // Check whether each nearby fell should be bagged at this point
+    for (const pointFell of pointFells) {
+      const state = fellBagStates.get(pointFell.id)
+      const bagDate = new Date(activityStartDate.getTime() + time * 1000)
+
+      if (!state) {
+        // First time near this fell — bag it
+        fellBagStates.set(pointFell.id, {
+          bagCount: 1,
+          hasExited: false,
+          summitLat: pointFell.latitude,
+          summitLon: pointFell.longitude,
+        })
+        fellIds.add(pointFell.id)
         bags.push({
           fell_id: pointFell.id,
           user_id: user.id,
           activity_id: activityId,
           bag_date: bagDate,
         })
-      })
-    }),
-  )
+      } else if (state.hasExited) {
+        // Returned to summit after exiting — bag it again
+        state.bagCount++
+        state.hasExited = false
+        fellIds.add(pointFell.id)
+        bags.push({
+          fell_id: pointFell.id,
+          user_id: user.id,
+          activity_id: activityId,
+          bag_date: bagDate,
+        })
+      }
+      // Otherwise: already bagged and hasn't exited, or hit max — skip
+    }
+  }
 
   await Promise.all(
     bags.map(async (bag) => {
-      if (!fellIds.has(bag.fell_id)) {
-        fellIds.add(bag.fell_id)
-
-        const [bagInserted] = await insertBag(bag)
-        if (bagInserted) {
-          const fellName =
-            (await getFellFromId(bagInserted.fell_id))?.name ||
-            bagInserted.fell_id.toString()
-
-          console.log(
-            `Found bag of fell ${fellName} at ${bagInserted.bag_date}`,
-          )
-        } else {
-          console.error(
-            `Error inserting bag: ${JSON.stringify(bag)} - didn't insert anything`,
-          )
-        }
+      const [bagInserted] = await insertBag(bag)
+      if (bagInserted) {
+        const fellName =
+          (await getFellFromId(bagInserted.fell_id))?.name ||
+          bagInserted.fell_id.toString()
+        console.log(`Found bag of fell ${fellName} at ${bagInserted.bag_date}`)
+      } else {
+        console.error(
+          `Error inserting bag: ${JSON.stringify(bag)} - didn't insert anything`,
+        )
       }
     }),
   )
-  await updateActivity(activityId, { checked_date: new Date() })
 
+  await updateActivity(activityId, { checked_date: new Date() })
   return fellIds
 }
