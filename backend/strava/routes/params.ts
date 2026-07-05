@@ -25,7 +25,7 @@ export function getNullOrDateParam(
   if (!param) {
     return null
   }
-  const paramDate = new Date(String(param))
+  const paramDate = new Date(Number(param))
   if (isNaN(paramDate.getTime())) {
     res.status(422).json({ error: "Unprocessable Content" })
     return null

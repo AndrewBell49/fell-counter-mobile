@@ -7,7 +7,7 @@ export async function setupDatabase(): Promise<SQLite.SQLiteDatabase> {
     CREATE TABLE IF NOT EXISTS fells (
       id INTEGER PRIMARY KEY,
       name TEXT NOT NULL,
-      elevation TEXT NOT NULL,
+      elevation REAL NOT NULL,
       latitude REAL NOT NULL,
       longitude REAL NOT NULL,
       country TEXT NOT NULL
@@ -48,4 +48,8 @@ export async function setupDatabase(): Promise<SQLite.SQLiteDatabase> {
 
 export function requireDb(db: DB_TYPE): asserts db is NonNullable<DB_TYPE> {
   if (!db) throw new Error("Database not initialised")
+}
+
+export async function resetDatabase(): Promise<void> {
+  await SQLite.deleteDatabaseAsync(DB_NAME)
 }

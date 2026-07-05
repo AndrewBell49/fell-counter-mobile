@@ -13,7 +13,7 @@ export async function insertFellClassifications(
   if (items.length === 0) return
 
   const placeholders = items.map(() => `(?, ?)`).join(", ")
-  const values = items.flatMap((fc) => [fc.fellId, fc.classificationId])
+  const values = items.flatMap((fc) => [fc.fell_id, fc.classification_id])
 
   await db.runAsync(
     `INSERT OR REPLACE INTO fell_classifications (fell_id, classification_id)

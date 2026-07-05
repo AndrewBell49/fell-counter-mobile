@@ -24,8 +24,10 @@ export async function saveAndGetActivityInfo(user: User) {
 
   // only search after most recent activity, except every FULL_REFRESH_EVERY ms
   if (!fullRefresh) {
-    console.log("Starting full refresh")
     params = { ...params, after: Math.round(maxDate.getTime() / 1000) }
+    console.log("Searching activities")
+  } else {
+    console.log("Starting full refresh")
   }
 
   const activityIds: Activity[] = []

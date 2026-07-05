@@ -23,14 +23,17 @@ export async function updateActivities(user: User) {
 
       await Promise.all(
         batch.map(async (activity) => {
-          // const fellIds =
-          await saveBagsFromActivity(user, activity.id, activity.start_date)
+          const fellIds = await saveBagsFromActivity(
+            user,
+            activity.id,
+            activity.start_date,
+          )
 
           const indexPadded = i
             .toString()
             .padStart(activities.length.toString().length)
           console.log(
-            `${indexPadded}/${activities.length} Saved `, //${fellIds.size} bags for ${activity.name}`,
+            `${indexPadded}/${activities.length} Saved ${fellIds.size} bags for ${activity.name}`,
           )
         }),
       )

@@ -14,7 +14,7 @@ import { getUpdateData } from "@/services/strava/updateData"
 import { useContext, useState } from "react"
 import { useApi } from "./useApi"
 
-type Status = "idle" | "running" | "completed" | "failed"
+type Status = "idle" | "running" | "completed" | "ready" | "failed"
 
 const POLL_INTERVAL_MS = 3000
 
@@ -69,9 +69,10 @@ export function useUpdateActivities() {
 
     try {
       const lastUpdatedItem = await getItem("lastUpdated")
-      const lastUpdated = lastUpdatedItem
-        ? new Date(parseInt(lastUpdatedItem))
-        : null
+      const lastUpdated = null
+      // lastUpdatedItem
+      //   ? new Date(parseInt(lastUpdatedItem))
+      //   : null
       const currentDate = new Date()
 
       let fells, classifications, fellClassifications, activities, bags
@@ -99,7 +100,9 @@ export function useUpdateActivities() {
             ),
             getUpdateData<Bag>("bag", lastUpdated, currentDate, request),
           ])
+        console.log("Updated the state of activities")
       } catch (err) {
+        console.error(err)
         setError(err instanceof ApiError ? err.message : "Failed to fetch data")
         return // don't write anything if fetching failed
       }
@@ -124,12 +127,16 @@ export function useUpdateActivities() {
         await database.insertActivities(activities.items)
         await database.insertFellClassifications(fellClassifications.items)
         await database.insertBags(bags.items)
+
+        console.log("Updated database completely")
       } catch (err) {
+        console.error(err)
         setError("Failed to save data — please try again")
         return // don't save lastUpdated if writes failed
       }
 
       await saveItem("lastUpdated", currentDate.getTime().toString())
+      setStatus("ready")
     } catch (error) {
       setError("Unexpected error — please try again")
     }

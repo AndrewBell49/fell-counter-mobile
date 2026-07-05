@@ -5,8 +5,11 @@ import {
   Fell,
   FellClassification,
 } from "./sqlite/schema"
+import { IGetBagCount } from "./sqlite/visuals/getBagCount"
+import { IGetBagHeightBoxPlot } from "./sqlite/visuals/getBagHeightBoxPlot"
 
 export interface DatabaseAdapter {
+  // Updating database
   insertFells(fells: Fell[] | Fell): Promise<void>
   removeFells(ids: number[] | number): Promise<void>
   insertClassifications(
@@ -23,4 +26,8 @@ export interface DatabaseAdapter {
   removeActivities(activityIds: number[] | number): Promise<void>
   insertBags(bags: Bag[] | Bag): Promise<void>
   removeBags(bagIds: number[] | number): Promise<void>
+
+  // Visuals
+  getBagCount(): Promise<IGetBagCount>
+  getBagHeightBoxPlot(): Promise<IGetBagHeightBoxPlot>
 }

@@ -26,34 +26,33 @@ router.use(async (req, res, next) => {
     }
     return res.status(401).json({ error: "Unauthorised user" })
   }
-
   res.locals.user = user
   next()
 })
 
 // All routes below
 router.post("/update-activities", (req, res) => {
-  if (activeJobs.has(res.locals.user.sessionId)) {
+  if (activeJobs.has(res.locals.user.session_id)) {
     return res
       .status(409)
       .json({ error: "This user is already running an update job" })
   }
 
-  activeJobs.set(res.locals.user.sessionId, { status: "running" })
+  activeJobs.set(res.locals.user.session_id, { status: "running" })
 
   res.status(202).json({ message: "Successfully started updating activities" })
 
   updateActivities(res.locals.user)
 })
 router.get("/update-activities/status", (req, res) => {
-  const job = activeJobs.get(res.locals.user.sessionId)
+  const job = activeJobs.get(res.locals.user.session_id)
   res.json({ status: job?.status ?? "idle" })
 })
 router.get("/user", getUser)
 router.get("/bag-data/:page", getBagData)
 router.get("/activity-data/:page", getActivityData)
 router.get("/fell-data/:page", getFellData)
-router.get("/fell_classification-data/:page", getFellClassificationData)
+router.get("/fell-classification-data/:page", getFellClassificationData)
 router.get("/classification-data/:page", getClassificationData)
 
 // Error handling middleware

@@ -15,11 +15,11 @@ export async function insertActivities(
     a.id,
     a.name,
     a.distance,
-    a.elapsedTime,
-    a.movingTime,
+    a.elapsed_time,
+    a.moving_time,
     a.elevation,
     a.sport,
-    a.startDate,
+    a.start_date,
   ])
 
   await db.runAsync(

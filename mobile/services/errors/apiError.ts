@@ -11,7 +11,7 @@ export class ApiError extends Error {
     const body = await res.json().catch(() => ({}))
     return new ApiError(
       res.status,
-      body.error ?? `Request failed: ${res.status}`,
+      body.error ?? `Request failed: ${res.status} for ${res.url}`,
     )
   }
 }

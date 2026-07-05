@@ -13,11 +13,11 @@ export async function removeFellClassifications(
   if (items.length === 0) return
 
   await db.withTransactionAsync(async () => {
-    for (const { fellId, classificationId } of items) {
+    for (const { fell_id, classification_id } of items) {
       await db.runAsync(
         `DELETE FROM fell_classifications
          WHERE fell_id = ? AND classification_id = ?`,
-        [fellId, classificationId],
+        [fell_id, classification_id],
       )
     }
   })

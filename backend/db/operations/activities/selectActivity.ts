@@ -45,11 +45,11 @@ export async function getAllActiveActivities(
       id: activeActivities.id,
       name: activeActivities.name,
       distance: activeActivities.distance,
-      elapsedTime: activeActivities.elapsed_time,
+      elapsed_time: activeActivities.elapsed_time,
       elevation: activeActivities.elevation,
       sport: activeActivities.sport,
-      movingTime: activeActivities.moving_time,
-      startDate: activeActivities.start_date,
+      moving_time: activeActivities.moving_time,
+      start_date: activeActivities.start_date,
     })
     .from(activeActivities)
     .where(
@@ -76,11 +76,11 @@ export async function getAllInactiveActivities(
       id: inactiveActivities.id,
       name: inactiveActivities.name,
       distance: inactiveActivities.distance,
-      elapsedTime: inactiveActivities.elapsed_time,
+      elapsed_time: inactiveActivities.elapsed_time,
       elevation: inactiveActivities.elevation,
       sport: inactiveActivities.sport,
-      movingTime: inactiveActivities.moving_time,
-      startDate: inactiveActivities.start_date,
+      moving_time: inactiveActivities.moving_time,
+      start_date: inactiveActivities.start_date,
     })
     .from(inactiveActivities)
     .where(

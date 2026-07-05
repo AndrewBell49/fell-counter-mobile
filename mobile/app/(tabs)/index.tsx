@@ -1,32 +1,33 @@
-import { useUpdateActivities } from "@/hooks/useUpdateActivities"
-import { useEffect } from "react"
+import { ElevationBoxPlot } from "@/components/visuals/BoxPlot"
+import { useDatabase } from "@/hooks/useDatabase"
+import { IGetBagHeightBoxPlot } from "@/services/db/sqlite/visuals/getBagHeightBoxPlot"
+import { useEffect, useState } from "react"
 import { Text, View } from "react-native"
 
 export default function HomePage() {
-  const { trigger, updateDatabaseData, status, error, isReady } =
-    useUpdateActivities()
+  const database = useDatabase()
+  const [boxPlotData, setBoxPlotData] = useState<IGetBagHeightBoxPlot | null>(
+    null,
+  )
 
   useEffect(() => {
-    trigger()
-  }, [])
+    let cancelled = false
 
-  useEffect(() => {
-    if (status == "completed" && isReady) {
-      updateDatabaseData()
+    database.getBagHeightBoxPlot().then((data) => {
+      if (!cancelled) {
+        setBoxPlotData(data)
+      }
+    })
+
+    return () => {
+      cancelled = true
     }
-  }, [status, isReady])
+  }, [database])
 
   return (
     <View>
       <Text>Index screen this screen</Text>
-      {!isReady ? (
-        <Text>Loading...</Text>
-      ) : (
-        <>
-          <Text>Status: {status}</Text>
-          {error && <Text>Error: {error}</Text>}
-        </>
-      )}
+      <ElevationBoxPlot data={boxPlotData}></ElevationBoxPlot>
     </View>
   )
 }

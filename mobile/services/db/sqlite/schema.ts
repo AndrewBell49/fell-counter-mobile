@@ -14,23 +14,23 @@ export interface Classification {
 }
 
 export interface FellClassification {
-  fellId: number
-  classificationId: number
+  fell_id: number
+  classification_id: number
 }
 export interface Activity {
   id: number
   name: string
   distance: number | null
-  elapsedTime: number | null
-  movingTime: number | null
+  elapsed_time: number | null
+  moving_time: number | null
   elevation: number | null
   sport: string | null
-  startDate: number
+  start_date: number
 }
 
 export interface Bag {
   id: number
-  fellId: number
-  activityId: number
-  bagDate: number
+  fell_id: number
+  activity_id: number
+  bag_date: number
 }

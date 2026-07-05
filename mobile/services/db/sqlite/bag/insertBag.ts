@@ -8,7 +8,12 @@ export async function insertBags(db: DB_TYPE, bags: Bag[] | Bag) {
   if (items.length === 0) return
 
   const placeholders = items.map(() => `(?, ?, ?, ?)`).join(", ")
-  const values = items.flatMap((b) => [b.id, b.fellId, b.activityId, b.bagDate])
+  const values = items.flatMap((b) => [
+    b.id,
+    b.fell_id,
+    b.activity_id,
+    b.bag_date,
+  ])
 
   await db.runAsync(
     `INSERT OR REPLACE INTO bags (id, fell_id, activity_id, bag_date)

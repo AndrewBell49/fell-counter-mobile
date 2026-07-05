@@ -17,53 +17,58 @@ import {
   Fell,
   FellClassification,
 } from "./sqlite/schema"
+import { getBagCount, IGetBagCount } from "./sqlite/visuals/getBagCount"
+import {
+  getBagHeightBoxPlot,
+  IGetBagHeightBoxPlot,
+} from "./sqlite/visuals/getBagHeightBoxPlot"
 
 export class SQLiteAdapter implements DatabaseAdapter {
   constructor(private db: SQLiteDatabase) {}
 
+  // Updating database
   insertFells(fells: Fell[] | Fell): Promise<void> {
     return insertFells(this.db, fells)
   }
-
   removeFells(ids: number[] | number): Promise<void> {
     return removeFells(this.db, ids)
   }
-
   insertClassifications(
     classifications: Classification[] | Classification,
   ): Promise<void> {
     return insertClassifications(this.db, classifications)
   }
-
   removeClassifications(classificationIds: number[] | number): Promise<void> {
     return removeClassifications(this.db, classificationIds)
   }
-
   insertFellClassifications(
     fellClassifications: FellClassification[] | FellClassification,
   ): Promise<void> {
     return insertFellClassifications(this.db, fellClassifications)
   }
-
   removeFellClassifications(
     fellClassifications: FellClassification[] | FellClassification,
   ): Promise<void> {
     return removeFellClassifications(this.db, fellClassifications)
   }
-
   insertActivities(activities: Activity[] | Activity): Promise<void> {
     return insertActivities(this.db, activities)
   }
-
   removeActivities(activityIds: number[] | number): Promise<void> {
     return removeActivities(this.db, activityIds)
   }
-
   insertBags(bags: Bag[] | Bag): Promise<void> {
     return insertBags(this.db, bags)
   }
-
   removeBags(bagIds: number[] | number): Promise<void> {
     return removeBags(this.db, bagIds)
+  }
+
+  // Visuals
+  getBagCount(): Promise<IGetBagCount> {
+    return getBagCount(this.db)
+  }
+  getBagHeightBoxPlot(): Promise<IGetBagHeightBoxPlot> {
+    return getBagHeightBoxPlot(this.db)
   }
 }

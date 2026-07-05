@@ -37,10 +37,10 @@ export async function getAllInactiveBags(
 ) {
   return await db
     .select({
-      id: activeBags.id,
-      activity_id: activeBags.activity_id,
-      bag_date: activeBags.bag_date,
-      fell_id: activeBags.fell_id,
+      id: inactiveBags.id,
+      activity_id: inactiveBags.activity_id,
+      bag_date: inactiveBags.bag_date,
+      fell_id: inactiveBags.fell_id,
     })
     .from(inactiveBags)
     .where(

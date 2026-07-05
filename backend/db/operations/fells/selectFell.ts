@@ -115,12 +115,12 @@ export async function getAllInactiveUserFells(
 
   const result = await db
     .select({
-      id: activeFells.id,
-      name: activeFells.name,
-      elevation: activeFells.elevation,
-      latitude: activeFells.latitude,
-      longitude: activeFells.longitude,
-      country: activeFells.country,
+      id: inactiveFells.id,
+      name: inactiveFells.name,
+      elevation: inactiveFells.elevation,
+      latitude: inactiveFells.latitude,
+      longitude: inactiveFells.longitude,
+      country: inactiveFells.country,
     })
     .from(inactiveFells)
     .where(
