@@ -1,9 +1,9 @@
 import { Text, View } from "react-native"
 
-export default function TabTwoScreen() {
+export default function ActivitiesScreen() {
   return (
     <View>
-      <Text>Explore this screen</Text>
+      <Text>Activities</Text>
     </View>
   )
 }

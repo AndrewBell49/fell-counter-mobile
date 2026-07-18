@@ -23,19 +23,27 @@ export async function getActivityData(req: Request, res: Response) {
       .status(400)
       .json({ error: "currentDate must be after lastUpdated" })
 
-  const activities = await getAllActiveActivities(
-    res.locals.user.id,
-    page,
-    lastUpdated,
-    currentDate,
-  )
+  const activities = (
+    await getAllActiveActivities(
+      res.locals.user.id,
+      page,
+      lastUpdated,
+      currentDate,
+    )
+  ).map((activity) => {
+    return { ...activity, start_date: activity.start_date.getTime() }
+  })
 
-  const removedActivities = await getAllInactiveActivities(
-    res.locals.user.id,
-    page,
-    lastUpdated,
-    currentDate,
-  )
+  const removedActivities = (
+    await getAllInactiveActivities(
+      res.locals.user.id,
+      page,
+      lastUpdated,
+      currentDate,
+    )
+  ).map((activity) => {
+    return { ...activity, start_date: activity.start_date.getTime() }
+  })
 
   return res.json({
     items: activities,

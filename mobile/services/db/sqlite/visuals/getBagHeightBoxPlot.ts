@@ -1,15 +1,6 @@
+import { IGetBagHeightBoxPlot } from "../../types"
 import { DB_TYPE } from "../constants"
 import { requireDb } from "../setup"
-
-export interface IGetBagHeightBoxPlot {
-  outliersMin: number[]
-  min: number
-  q1: number
-  medium: number
-  q3: number
-  max: number
-  outliersMax: number[]
-}
 
 export async function getBagHeightBoxPlot(
   db: DB_TYPE,
@@ -44,7 +35,7 @@ export async function getBagHeightBoxPlot(
     min: Math.min(...inliers),
     max: Math.max(...inliers),
     q1,
-    medium: median,
+    median,
     q3,
     outliersMin: elevations.filter((e) => e < lowerFence),
     outliersMax: elevations.filter((e) => e > upperFence),

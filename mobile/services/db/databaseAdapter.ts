@@ -1,12 +1,17 @@
-import {
+import type {
   Activity,
   Bag,
   Classification,
   Fell,
   FellClassification,
 } from "./sqlite/schema"
-import { IGetBagCount } from "./sqlite/visuals/getBagCount"
-import { IGetBagHeightBoxPlot } from "./sqlite/visuals/getBagHeightBoxPlot"
+import type {
+  IGetBagCount,
+  IGetBagHeightBoxPlot,
+  IGetBagsInDateOrder,
+  IGetCountryBag,
+  IGetMaxMinBagDate,
+} from "./types"
 
 export interface DatabaseAdapter {
   // Updating database
@@ -27,7 +32,12 @@ export interface DatabaseAdapter {
   insertBags(bags: Bag[] | Bag): Promise<void>
   removeBags(bagIds: number[] | number): Promise<void>
 
+  // Queries
+  getMaxMinBagDate(): Promise<IGetMaxMinBagDate>
+
   // Visuals
   getBagCount(): Promise<IGetBagCount>
   getBagHeightBoxPlot(): Promise<IGetBagHeightBoxPlot>
+  getBagsInDateOrder(): Promise<IGetBagsInDateOrder[]>
+  getBagsByCountry(): Promise<IGetCountryBag[]>
 }

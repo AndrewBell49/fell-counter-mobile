@@ -12,6 +12,7 @@ import { getItem, saveItem } from "@/services/storage/storage"
 import { SERVER_URL } from "@/services/strava/constants"
 import { getUpdateData } from "@/services/strava/updateData"
 import { useContext, useState } from "react"
+import { Platform } from "react-native"
 import { useApi } from "./useApi"
 
 type Status = "idle" | "running" | "completed" | "ready" | "failed"
@@ -26,9 +27,9 @@ export function useUpdateActivities() {
 
   async function pollStatus() {
     try {
-      const res = await request<{ status: Status }>(
-        `${SERVER_URL}/strava/update-activities/status`,
-      )
+      const res = await request<{ status: Status }>({
+        url: `${SERVER_URL}/strava/update-activities/status`,
+      })
       setStatus(res.status)
 
       if (res.status === "running") {
@@ -48,13 +49,13 @@ export function useUpdateActivities() {
     setError(null)
 
     try {
-      await request(
-        `${SERVER_URL}/strava/update-activities`,
-        {
+      await request({
+        url: `${SERVER_URL}/strava/update-activities`,
+        options: {
           method: "POST",
         },
-        [409],
-      )
+        allowedCodes: [409],
+      })
 
       pollStatus()
     } catch (err) {
@@ -69,10 +70,9 @@ export function useUpdateActivities() {
 
     try {
       const lastUpdatedItem = await getItem("lastUpdated")
-      const lastUpdated = null
-      // lastUpdatedItem
-      //   ? new Date(parseInt(lastUpdatedItem))
-      //   : null
+      const lastUpdated = lastUpdatedItem
+        ? new Date(parseInt(lastUpdatedItem))
+        : null
       const currentDate = new Date()
 
       let fells, classifications, fellClassifications, activities, bags
@@ -139,6 +139,16 @@ export function useUpdateActivities() {
       setStatus("ready")
     } catch (error) {
       setError("Unexpected error — please try again")
+    }
+  }
+
+  if (Platform.OS === "web") {
+    return {
+      trigger: () => {},
+      updateDatabaseData: () => {},
+      status: "ready",
+      error: "",
+      isReady: true,
     }
   }
 

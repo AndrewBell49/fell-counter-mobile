@@ -1,8 +1,10 @@
 import * as SQLite from "expo-sqlite"
-import { DB_NAME, DB_TYPE } from "./constants"
+import type { DB_TYPE } from "./constants"
+import { DB_NAME } from "./constants"
 
 export async function setupDatabase(): Promise<SQLite.SQLiteDatabase> {
   const db = await SQLite.openDatabaseAsync(DB_NAME)
+
   await db.execAsync(`
     CREATE TABLE IF NOT EXISTS fells (
       id INTEGER PRIMARY KEY,

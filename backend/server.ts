@@ -10,11 +10,11 @@ app.use(
   cors({
     origin: "http://localhost:8081", // or '*' during development
     methods: ["GET", "POST"],
-    // allowedHeaders: [
-    //   "Content-Type",
-    //   "x-session-id",
-    //   "ngrok-skip-browser-warning",
-    // ],
+    allowedHeaders: [
+      "Content-Type",
+      "x-session-id",
+      "ngrok-skip-browser-warning",
+    ],
   }),
 )
 

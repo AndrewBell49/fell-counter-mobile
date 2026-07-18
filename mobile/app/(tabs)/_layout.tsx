@@ -6,11 +6,10 @@ import { useUpdateActivities } from "@/hooks/useUpdateActivities"
 import { Ionicons } from "@expo/vector-icons"
 import { Redirect, Tabs } from "expo-router"
 import React, { useContext, useEffect } from "react"
-import { StyleSheet, Text, View } from "react-native"
+import { Image, StyleSheet, Text, View } from "react-native"
 
 export default function TabLayout() {
   const { user } = useContext(UserContext)
-
   const { trigger, updateDatabaseData, status, error, isReady } =
     useUpdateActivities()
 
@@ -19,6 +18,7 @@ export default function TabLayout() {
   }, [])
 
   useEffect(() => {
+    console.log(`Status: ${status} - isReady: ${isReady}`)
     if (status === "completed" && isReady) {
       updateDatabaseData()
     }
@@ -49,18 +49,35 @@ export default function TabLayout() {
         <Tabs.Screen
           name='index'
           options={{
-            title: "Home",
-            tabBarIcon: ({ color }) => (
-              <Ionicons size={28} name='home-outline' color={color} />
+            title: "Bags",
+            tabBarIcon: ({ color, size }) => (
+              <Image
+                source={require("@/assets/images/mountains.png")}
+                style={{ width: size, height: size, tintColor: color }}
+                resizeMode='contain'
+              />
             ),
           }}
         />
         <Tabs.Screen
-          name='explore'
+          name='activities'
           options={{
-            title: "Explore",
+            title: "Activities",
+            tabBarIcon: ({ color, size }) => (
+              <Image
+                source={require("@/assets/images/running.png")}
+                style={{ width: size, height: size, tintColor: color }}
+                resizeMode='contain'
+              />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name='map'
+          options={{
+            title: "Map",
             tabBarIcon: ({ color }) => (
-              <Ionicons size={28} name='paper-plane-outline' color={color} />
+              <Ionicons size={28} name='map' color={color} />
             ),
           }}
         />
@@ -83,7 +100,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 16,
-    color: COLOURS.expense,
+    color: COLOURS.pop,
     textAlign: "center",
     paddingHorizontal: 24,
   },

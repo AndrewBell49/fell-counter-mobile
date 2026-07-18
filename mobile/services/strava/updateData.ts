@@ -20,9 +20,9 @@ export async function getUpdateData<T>(
   let dataToCome = true
 
   while (dataToCome) {
-    const data = await request<UpdateSchema<T>>(
-      `${SERVER_URL}/strava/${name}-data/${page}?currentDate=${currentDate.getTime()}&lastUpdated=${lastUpdated?.getTime() ?? ""}`,
-    )
+    const data = await request<UpdateSchema<T>>({
+      url: `${SERVER_URL}/strava/${name}-data/${page}?currentDate=${currentDate.getTime()}&lastUpdated=${lastUpdated?.getTime() ?? ""}`,
+    })
 
     items.push(...data.items)
     removedItems.push(...data.removed_items)

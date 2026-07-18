@@ -3,7 +3,7 @@
     "name": "FellCounter",
     "slug": "FellCounter",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "scheme": "fellcounter",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -36,7 +36,8 @@
         }
       ],
       "expo-sqlite",
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true,

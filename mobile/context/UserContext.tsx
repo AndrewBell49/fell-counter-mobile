@@ -60,7 +60,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       deleteItem("sessionId")
       deleteItem("name")
     }
-  }, [user])
+  }, [user, hasLoaded])
 
   return (
     <UserContext.Provider value={{ user, setUser, getHeaders }}>

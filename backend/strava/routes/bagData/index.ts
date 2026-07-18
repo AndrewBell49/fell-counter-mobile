@@ -23,19 +23,17 @@ export async function getBagData(req: Request, res: Response) {
       .status(400)
       .json({ error: "currentDate must be after lastUpdated" })
 
-  const bags = await getAllActiveBags(
-    res.locals.user.id,
-    page,
-    lastUpdated,
-    currentDate,
-  )
+  const bags = (
+    await getAllActiveBags(res.locals.user.id, page, lastUpdated, currentDate)
+  ).map((bag) => {
+    return { ...bag, bag_date: bag.bag_date.getTime() }
+  })
 
-  const removedBags = await getAllInactiveBags(
-    res.locals.user.id,
-    page,
-    lastUpdated,
-    currentDate,
-  )
+  const removedBags = (
+    await getAllInactiveBags(res.locals.user.id, page, lastUpdated, currentDate)
+  ).map((bag) => {
+    return { ...bag, bag_date: bag.bag_date.getTime() }
+  })
 
   return res.json({
     items: bags,

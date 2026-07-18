@@ -1,33 +1,38 @@
-import { ElevationBoxPlot } from "@/components/visuals/BoxPlot"
-import { useDatabase } from "@/hooks/useDatabase"
-import { IGetBagHeightBoxPlot } from "@/services/db/sqlite/visuals/getBagHeightBoxPlot"
-import { useEffect, useState } from "react"
-import { Text, View } from "react-native"
+import { Divider } from "@/components/utils/Divider"
+import { Text } from "@/components/utils/Text"
+import { BagsOverTime } from "@/components/visuals/BagsOverTime"
+import { CountryPie } from "@/components/visuals/CountryPie"
+import { FellHeightBoxPlot } from "@/components/visuals/FellHeightBoxPlot"
+import { UserContext } from "@/context/UserContext"
+import { useContext } from "react"
+import { ScrollView, StyleSheet } from "react-native"
 
-export default function HomePage() {
-  const database = useDatabase()
-  const [boxPlotData, setBoxPlotData] = useState<IGetBagHeightBoxPlot | null>(
-    null,
-  )
-
-  useEffect(() => {
-    let cancelled = false
-
-    database.getBagHeightBoxPlot().then((data) => {
-      if (!cancelled) {
-        setBoxPlotData(data)
-      }
-    })
-
-    return () => {
-      cancelled = true
-    }
-  }, [database])
+export default function BagsScreen() {
+  const { user } = useContext(UserContext)
 
   return (
-    <View>
-      <Text>Index screen this screen</Text>
-      <ElevationBoxPlot data={boxPlotData}></ElevationBoxPlot>
-    </View>
+    <ScrollView style={styles.container}>
+      <Text style={styles.text}>Welcome, {user?.name}</Text>
+      <FellHeightBoxPlot />
+      <Divider />
+      <CountryPie />
+      <Divider />
+      <BagsOverTime />
+    </ScrollView>
   )
 }
+
+const styles = StyleSheet.create({
+  container: {
+    display: "flex",
+    flexDirection: "column",
+    padding: 10,
+    gap: 10,
+  },
+  text: {
+    display: "flex",
+    marginBottom: 10,
+    fontWeight: "bold",
+    fontSize: 28,
+  },
+})

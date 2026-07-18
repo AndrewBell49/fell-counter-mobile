@@ -11,11 +11,15 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 export function useApi() {
   const { getHeaders } = useContext(UserContext)
 
-  async function request<T>(
-    url: string,
-    options?: RequestInit,
-    allowedCodes: number[] = [],
-  ): Promise<T> {
+  async function request<T>({
+    url,
+    options,
+    allowedCodes = [],
+  }: {
+    url: string
+    options?: RequestInit
+    allowedCodes?: number[]
+  }): Promise<T> {
     let lastError: ApiError
 
     for (let i = 1; i <= RETRIES; i++) {

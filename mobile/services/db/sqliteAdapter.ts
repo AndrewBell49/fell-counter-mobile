@@ -4,24 +4,31 @@ import { insertActivities } from "./sqlite/activity/insertActivity"
 import { removeActivities } from "./sqlite/activity/removeActivity"
 import { insertBags } from "./sqlite/bag/insertBag"
 import { removeBags } from "./sqlite/bag/removeBag"
+import { getMaxMinBagDate } from "./sqlite/bag/selectBag"
 import { insertClassifications } from "./sqlite/classification/insertClassification"
 import { removeClassifications } from "./sqlite/classification/removeClassification"
 import { insertFellClassifications } from "./sqlite/fellClassification/insertFellClassification"
 import { removeFellClassifications } from "./sqlite/fellClassification/removeFellClassification"
 import { insertFells } from "./sqlite/fells/insertFell"
 import { removeFells } from "./sqlite/fells/removeFell"
-import {
+import type {
   Activity,
   Bag,
   Classification,
   Fell,
   FellClassification,
 } from "./sqlite/schema"
-import { getBagCount, IGetBagCount } from "./sqlite/visuals/getBagCount"
-import {
-  getBagHeightBoxPlot,
+import { getBagCount } from "./sqlite/visuals/getBagCount"
+import { getBagHeightBoxPlot } from "./sqlite/visuals/getBagHeightBoxPlot"
+import { getBagsByCountry } from "./sqlite/visuals/getBagsByCountry"
+import { getBagsInDateOrder } from "./sqlite/visuals/getBagsInDateOrder"
+import type {
+  IGetBagCount,
   IGetBagHeightBoxPlot,
-} from "./sqlite/visuals/getBagHeightBoxPlot"
+  IGetBagsInDateOrder,
+  IGetCountryBag,
+  IGetMaxMinBagDate,
+} from "./types"
 
 export class SQLiteAdapter implements DatabaseAdapter {
   constructor(private db: SQLiteDatabase) {}
@@ -63,6 +70,9 @@ export class SQLiteAdapter implements DatabaseAdapter {
   removeBags(bagIds: number[] | number): Promise<void> {
     return removeBags(this.db, bagIds)
   }
+  getMaxMinBagDate(): Promise<IGetMaxMinBagDate> {
+    return getMaxMinBagDate(this.db)
+  }
 
   // Visuals
   getBagCount(): Promise<IGetBagCount> {
@@ -70,5 +80,11 @@ export class SQLiteAdapter implements DatabaseAdapter {
   }
   getBagHeightBoxPlot(): Promise<IGetBagHeightBoxPlot> {
     return getBagHeightBoxPlot(this.db)
+  }
+  getBagsInDateOrder(): Promise<IGetBagsInDateOrder[]> {
+    return getBagsInDateOrder(this.db)
+  }
+  getBagsByCountry(): Promise<IGetCountryBag[]> {
+    return getBagsByCountry(this.db)
   }
 }

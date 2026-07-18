@@ -2,10 +2,12 @@ import { Platform } from "react-native"
 import { DatabaseAdapter } from "./databaseAdapter"
 import { setupDatabase } from "./sqlite/setup"
 import { SQLiteAdapter } from "./sqliteAdapter"
+import { WebAdapter } from "./webAdapter"
 
 export async function createDatabaseAdapter(): Promise<DatabaseAdapter> {
+  console.log(Platform.OS)
   if (Platform.OS === "web") {
-    throw Error("Web implementation of database adapter not created")
+    return new WebAdapter()
   }
 
   const sqlite = await setupDatabase()

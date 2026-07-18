@@ -15,9 +15,9 @@ export default function SignInScreen() {
   async function handleLogin() {
     setError("")
     try {
-      const res = await request<{ url: string }>(
-        `${SERVER_URL}/auth/url?platform=${Platform.OS === "web" ? "web" : "mobile"}`,
-      )
+      const res = await request<{ url: string }>({
+        url: `${SERVER_URL}/auth/url?platform=${Platform.OS === "web" ? "web" : "mobile"}`,
+      })
 
       if (Platform.OS === "web") {
         window.location.href = res.url // full redirect on web
