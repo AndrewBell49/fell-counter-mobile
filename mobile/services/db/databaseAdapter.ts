@@ -10,6 +10,7 @@ import type {
   IGetBagHeightBoxPlot,
   IGetBagsInDateOrder,
   IGetCountryBag,
+  IGetFellLocations,
   IGetMaxMinBagDate,
 } from "./types"
 
@@ -40,4 +41,10 @@ export interface DatabaseAdapter {
   getBagHeightBoxPlot(): Promise<IGetBagHeightBoxPlot>
   getBagsInDateOrder(): Promise<IGetBagsInDateOrder[]>
   getBagsByCountry(): Promise<IGetCountryBag[]>
+
+  // Map
+  getBagLocationsByClassification(
+    classificationId: number,
+  ): Promise<IGetFellLocations[]>
+  getAllClassifications(): Promise<Classification[]>
 }

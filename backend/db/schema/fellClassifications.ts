@@ -4,22 +4,29 @@ import {
   timestamp,
   boolean,
   pgView,
+  primaryKey,
 } from "drizzle-orm/pg-core"
 import { fells } from "./fells"
 import { classifications } from "./classifications"
 import { eq } from "drizzle-orm"
 import { db } from ".."
 
-export const fellClassifications = pgTable("fell_classifications", {
-  fell_id: integer()
-    .notNull()
-    .references(() => fells.id),
-  classification_id: integer()
-    .notNull()
-    .references(() => classifications.id),
-  updated_at: timestamp().notNull().defaultNow(),
-  active: boolean().notNull().default(true),
-})
+export const fellClassifications = pgTable(
+  "fell_classifications",
+  {
+    fell_id: integer()
+      .notNull()
+      .references(() => fells.id),
+    classification_id: integer()
+      .notNull()
+      .references(() => classifications.id),
+    updated_at: timestamp().notNull().defaultNow(),
+    active: boolean().notNull().default(true),
+  },
+  (table) => [
+    primaryKey({ columns: [table.fell_id, table.classification_id] }),
+  ],
+)
 
 export type FellClassification = typeof fellClassifications.$inferSelect
 export type NewFellClassification = typeof fellClassifications.$inferInsert

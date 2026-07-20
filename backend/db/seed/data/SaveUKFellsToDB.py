@@ -2,6 +2,7 @@
 # UK fells have classifications (as shown below) included
 
 import re
+import csv
 from Database import Database
 
 # I only downloaded these classifications, more were available
@@ -17,50 +18,44 @@ classifications = {
     'WO': 'Wainwright Outlying Fell',
     'B': 'Birkett',
     'E': 'Ethel',
-    'CoH': 'Historic County Top (pre-1974)'
+    'CoH': 'Historic County Top (pre-1974)',
+    'P500': 'P500 Peaks',
+    'P600': 'P600 Peaks'
 }
 
 with Database() as db:
     fellID = db.GetLastFellID()
 
-with open('Data/UKFellsDownload.gpx', 'r') as r:
-    for line in r.readlines():
-        data = re.split('[<>]', line.strip('<>'))
-
-        if len(data) != 24:
-            continue
-
-        latLon = data[0].split('"')
-        latitude = latLon[1].strip()
-        longitude = latLon[3].strip()
+with open('UKHills.csv', newline='\n') as csvfile:
+    reader = csv.DictReader(csvfile)
+    for row in reader:
+        latitude = row[' latitude']
+        longitude = row[' longitude']
 
         try:
-            elevation = float(data[3])
+            elevation = float(row[' metres'])
         except Exception as e:
             print('Error converting elevation: ' + e)
             elevation = None
 
-        name = ' '.join(data[7].split()[1:])
+        name = row[' hillname']
 
-
-        # if that fell is already in the database, don't add a duplicate
         with Database() as db:
             if db.FellAlreadyInDB(name, elevation, latitude, longitude):
                 continue
 
+        countryCode = row[' country']
+        country = "GB"
+        if countryCode == "I":
+            country = "Ireland"
+
         with Database() as db:
             fellID += 1
-            db.AddFellToDB(fellID, name, elevation, latitude, longitude, 'UK')
+            db.AddFellToDB(fellID, name, elevation, latitude, longitude, country)
             print(f'Added {name} to database')
 
-        allClassifications = data[15]
-
-        for classification in allClassifications.split(','):
-            try:
+        for key, name in classifications.items():
+            if row[key] == '1':
                 with Database() as db:
-                    classificationID = db.GetClassificationIDFromName(classifications[classification])
+                    classificationID = db.GetClassificationIDFromName(name)
                     db.AddNewFellClassification(fellID, classificationID)
-
-            # ignore classifications not in the database
-            except KeyError as e:
-                pass

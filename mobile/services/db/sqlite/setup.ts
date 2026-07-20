@@ -23,7 +23,8 @@ export async function setupDatabase(): Promise<SQLite.SQLiteDatabase> {
 
     CREATE TABLE IF NOT EXISTS fell_classifications (
       fell_id INTEGER NOT NULL REFERENCES fells(id),
-      classification_id INTEGER NOT NULL REFERENCES classifications(id)
+      classification_id INTEGER NOT NULL REFERENCES classifications(id),
+      PRIMARY KEY (fell_id, classification_id)
     );
 
     CREATE TABLE IF NOT EXISTS activities (
@@ -54,4 +55,5 @@ export function requireDb(db: DB_TYPE): asserts db is NonNullable<DB_TYPE> {
 
 export async function resetDatabase(): Promise<void> {
   await SQLite.deleteDatabaseAsync(DB_NAME)
+  console.log("Reset Database")
 }

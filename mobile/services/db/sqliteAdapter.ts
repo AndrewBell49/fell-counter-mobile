@@ -18,8 +18,10 @@ import type {
   Fell,
   FellClassification,
 } from "./sqlite/schema"
+import { getAllClassifications } from "./sqlite/visuals/getAllClassifications"
 import { getBagCount } from "./sqlite/visuals/getBagCount"
 import { getBagHeightBoxPlot } from "./sqlite/visuals/getBagHeightBoxPlot"
+import { getBagLocationsByClassification } from "./sqlite/visuals/getBagLocationsByClassification"
 import { getBagsByCountry } from "./sqlite/visuals/getBagsByCountry"
 import { getBagsInDateOrder } from "./sqlite/visuals/getBagsInDateOrder"
 import type {
@@ -27,6 +29,7 @@ import type {
   IGetBagHeightBoxPlot,
   IGetBagsInDateOrder,
   IGetCountryBag,
+  IGetFellLocations,
   IGetMaxMinBagDate,
 } from "./types"
 
@@ -86,5 +89,15 @@ export class SQLiteAdapter implements DatabaseAdapter {
   }
   getBagsByCountry(): Promise<IGetCountryBag[]> {
     return getBagsByCountry(this.db)
+  }
+
+  // Maps
+  getBagLocationsByClassification(
+    classificationId: number,
+  ): Promise<IGetFellLocations[]> {
+    return getBagLocationsByClassification(classificationId, this.db)
+  }
+  getAllClassifications(): Promise<Classification[]> {
+    return getAllClassifications(this.db)
   }
 }

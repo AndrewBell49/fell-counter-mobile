@@ -1,14 +1,12 @@
-import { eq, and, gte, lt } from "drizzle-orm"
+import { and, gte, lt } from "drizzle-orm"
 import { db } from "../.."
 import { ROW_RETURN_LIMIT } from "../../../lib/constants"
 import {
   activeFellClassifications,
   inactiveFellClassifications,
 } from "../../schema/fellClassifications"
-import { bags } from "../../schema/bags"
 
 export async function getAllActiveFellClassifications(
-  userId: number,
   page: number | undefined,
   startDate: Date,
   endDate: Date,
@@ -19,12 +17,10 @@ export async function getAllActiveFellClassifications(
       classification_id: activeFellClassifications.classification_id,
     })
     .from(activeFellClassifications)
-    .innerJoin(bags, eq(activeFellClassifications.fell_id, bags.fell_id))
     .where(
       and(
         gte(activeFellClassifications.updated_at, startDate),
         lt(activeFellClassifications.updated_at, endDate),
-        eq(bags.user_id, userId),
       ),
     )
     .orderBy(
@@ -36,7 +32,6 @@ export async function getAllActiveFellClassifications(
 }
 
 export async function getAllInactiveFellClassifications(
-  userId: number,
   page: number | undefined,
   startDate: Date,
   endDate: Date,
@@ -47,12 +42,10 @@ export async function getAllInactiveFellClassifications(
       classification_id: inactiveFellClassifications.classification_id,
     })
     .from(inactiveFellClassifications)
-    .innerJoin(bags, eq(inactiveFellClassifications.fell_id, bags.fell_id))
     .where(
       and(
         gte(inactiveFellClassifications.updated_at, startDate),
         lt(inactiveFellClassifications.updated_at, endDate),
-        eq(bags.user_id, userId),
       ),
     )
     .orderBy(

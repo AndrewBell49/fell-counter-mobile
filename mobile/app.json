@@ -16,7 +16,12 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.andrewbell.fellcounter"
+      "package": "com.andrewbell.fellcounter",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyBRmB8JBZQmZc0zyhluWm3gTMi2UVBzIks"
+        }
+      }
     },
     "web": {
       "output": "static"

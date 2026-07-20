@@ -17,5 +17,23 @@ export function FellHeightBoxPlot() {
     })
   }, [database])
 
-  return <BoxPlot data={boxPlotData} title='Bag Heights'></BoxPlot>
+  return (
+    <BoxPlot
+      data={boxPlotData}
+      title={`Bag Heights${getMaxMinText(boxPlotData)}`}
+    />
+  )
+}
+
+function getMaxMinText(boxPlotData: IGetBagHeightBoxPlot | null): string {
+  if (!boxPlotData) return ""
+  let max = boxPlotData.max
+  let min = boxPlotData.min
+  if (boxPlotData.outliersMax.length > 0) {
+    max = boxPlotData.outliersMax.sort()[0]
+  }
+  if (boxPlotData.outliersMin.length > 0) {
+    min = boxPlotData.outliersMin.sort()[0]
+  }
+  return ` (range: ${min}m - ${max}m)`
 }

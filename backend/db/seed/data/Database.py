@@ -65,3 +65,17 @@ class Database:
         if lastFellID == None:
             return 0
         return lastFellID[0]
+    
+    def GetClassificationIDFromName(self, name):
+        classification =  self.cur.execute("""SELECT id 
+                                              FROM classifications
+                                              WHERE name = ?""",
+                                              (name,)).fetchone()
+        return classification[0]
+
+    def AddNewFellClassification(self, fellID, classificationID):
+        self.cur.execute("""INSERT INTO fell_classifications 
+                            (fell_id, classification_id) 
+                            VALUES (?, ?)""", 
+                            (fellID, classificationID))
+        self.con.commit()

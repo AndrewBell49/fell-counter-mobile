@@ -24,14 +24,12 @@ export async function getFellClassificationData(req: Request, res: Response) {
       .json({ error: "currentDate must be after lastUpdated" })
 
   const fellClassifications = await getAllActiveFellClassifications(
-    res.locals.user.id,
     page,
     lastUpdated,
     currentDate,
   )
 
   const removedFellClassifications = await getAllInactiveFellClassifications(
-    res.locals.user.id,
     page,
     lastUpdated,
     currentDate,

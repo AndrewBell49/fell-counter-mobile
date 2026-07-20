@@ -3,7 +3,7 @@ import { between, and, eq, inArray, gte, lt, or } from "drizzle-orm"
 import { ROW_RETURN_LIMIT } from "../../../lib/constants"
 import { Fell, activeFells, inactiveFells } from "../../schema/fells"
 import { activeBags } from "../../schema/bags"
-import { bags } from "../../schema/bags"
+import { activeFellClassifications } from "../../schema/fellClassifications"
 
 interface getFellsInRangeParams {
   minLatitude: number
@@ -52,6 +52,17 @@ export async function getAllActiveUserFells(
   startDate: Date,
   endDate: Date,
 ) {
+  // Every fell that has a classification — public reference data, same for all users
+  const classifiedFellsSubquery = db
+    .selectDistinct({ fell_id: activeFellClassifications.fell_id })
+    .from(activeFellClassifications)
+
+  // Fells this user has ever bagged
+  const baggedFellsSubquery = db
+    .selectDistinct({ fell_id: activeBags.fell_id })
+    .from(activeBags)
+    .where(eq(activeBags.user_id, userId))
+
   // Fells newly bagged since last sync
   const newlyBaggedSubquery = db
     .selectDistinct({ fell_id: activeBags.fell_id })
@@ -64,11 +75,16 @@ export async function getAllActiveUserFells(
       ),
     )
 
-  // All fells the user has ever bagged (for catching fell data updates)
-  const allBaggedSubquery = db
-    .selectDistinct({ fell_id: activeBags.fell_id })
-    .from(activeBags)
-    .where(eq(activeBags.user_id, userId))
+  // Fells newly classified since last sync (just added to a named list)
+  const newlyClassifiedSubquery = db
+    .selectDistinct({ fell_id: activeFellClassifications.fell_id })
+    .from(activeFellClassifications)
+    .where(
+      and(
+        gte(activeFellClassifications.updated_at, startDate),
+        lt(activeFellClassifications.updated_at, endDate),
+      ),
+    )
 
   const result = await db
     .select({
@@ -82,15 +98,19 @@ export async function getAllActiveUserFells(
     .from(activeFells)
     .where(
       and(
-        inArray(activeFells.id, allBaggedSubquery),
+        // In scope: either classified (public) or bagged by this user
         or(
-          // Either the fell data itself changed
+          inArray(activeFells.id, classifiedFellsSubquery),
+          inArray(activeFells.id, baggedFellsSubquery),
+        ),
+        // Delta: something about this fell actually changed/became relevant
+        or(
           and(
             gte(activeFells.updated_at, startDate),
             lt(activeFells.updated_at, endDate),
           ),
-          // Or it was newly bagged
           inArray(activeFells.id, newlyBaggedSubquery),
+          inArray(activeFells.id, newlyClassifiedSubquery),
         ),
       ),
     )
@@ -101,17 +121,21 @@ export async function getAllActiveUserFells(
   return result
 }
 
-// get inactive fells from all of the users bags - active or inactive
+// get inactive fells that are either classified or bagged by this user
 export async function getAllInactiveUserFells(
   userId: number,
   page: number | undefined,
   startDate: Date,
   endDate: Date,
 ) {
-  const allBaggedFellIdsSubquery = db
-    .selectDistinct({ fell_id: bags.fell_id })
-    .from(bags)
-    .where(eq(bags.user_id, userId)) // no date filter - all bags ever
+  const classifiedFellsSubquery = db
+    .selectDistinct({ fell_id: activeFellClassifications.fell_id })
+    .from(activeFellClassifications)
+
+  const baggedFellsSubquery = db
+    .selectDistinct({ fell_id: activeBags.fell_id })
+    .from(activeBags)
+    .where(eq(activeBags.user_id, userId))
 
   const result = await db
     .select({
@@ -125,7 +149,10 @@ export async function getAllInactiveUserFells(
     .from(inactiveFells)
     .where(
       and(
-        inArray(inactiveFells.id, allBaggedFellIdsSubquery),
+        or(
+          inArray(inactiveFells.id, classifiedFellsSubquery),
+          inArray(inactiveFells.id, baggedFellsSubquery),
+        ),
         gte(inactiveFells.updated_at, startDate),
         lt(inactiveFells.updated_at, endDate),
       ),

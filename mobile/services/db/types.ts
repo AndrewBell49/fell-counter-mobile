@@ -27,3 +27,12 @@ export interface IGetCountryBag {
   country: string
   count: number
 }
+
+export interface IGetFellLocations {
+  id: number
+  name: string
+  elevation: number
+  latitude: number
+  longitude: number
+  bagDates: string[]
+}
