@@ -141,4 +141,5 @@ export const THEMES = {
   ocean: { light: oceanThemeLight, dark: oceanThemeDark },
 }
 
-export const COLOURS = THEMES.default.light
+export const THEME: "light" | "dark" = "light"
+export const COLOURS = THEMES.default[THEME]

@@ -6,12 +6,14 @@ import type {
   FellClassification,
 } from "./sqlite/schema"
 import type {
+  IGetActivityDistanceInDateOrder,
   IGetBagCount,
   IGetBagHeightBoxPlot,
   IGetBagsInDateOrder,
   IGetCountryBag,
   IGetFellLocations,
   IGetMaxMinBagDate,
+  IGetSportCount,
 } from "./types"
 
 export interface DatabaseAdapter {
@@ -36,11 +38,17 @@ export interface DatabaseAdapter {
   // Queries
   getMaxMinBagDate(): Promise<IGetMaxMinBagDate>
 
-  // Visuals
+  // Bag Visuals
   getBagCount(): Promise<IGetBagCount>
   getBagHeightBoxPlot(): Promise<IGetBagHeightBoxPlot>
   getBagsInDateOrder(): Promise<IGetBagsInDateOrder[]>
   getBagsByCountry(): Promise<IGetCountryBag[]>
+
+  // Activity Visuals
+  getSportCounts(): Promise<IGetSportCount[]>
+  getActivityDistanceInDateOrder(
+    sport: string,
+  ): Promise<IGetActivityDistanceInDateOrder[]>
 
   // Map
   getBagLocationsByClassification(

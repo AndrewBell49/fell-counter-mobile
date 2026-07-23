@@ -28,6 +28,7 @@ export default function MapScreen() {
   const [selectedClassification, setSelectedClassification] = useState(8)
   const [mapReady, setMapReady] = useState(false)
   const mapRef = useRef<MapView>(null)
+  const [pickerContentHeight, setPickerContentHeight] = useState(64)
 
   useEffect(() => {
     if (!database) return
@@ -83,13 +84,19 @@ export default function MapScreen() {
 
   const getClassificationText = (classificationId: number) => {
     if (classificationId === -1) {
-      return "All bagged fells"
+      return {
+        title: "All bagged fells",
+        subtitle: "All of the fells in the world that you have climbed",
+      }
     }
     const classification = classifications.filter(
       (c) => c.id === selectedClassification,
     )
     if (classification.length === 0) {
-      return `Error - no classification ID: ${classificationId}`
+      return {
+        title: `Error - no classification ID: ${classificationId}`,
+        subtitle: "",
+      }
     }
     const fellsBagged = fellLocations.filter(
       (f) => f.bagDates.length > 0,
@@ -101,7 +108,10 @@ export default function MapScreen() {
     } else if (percentBagged === 100 && fellsBagged < fellLocations.length) {
       percentBaggedText = ">99%"
     }
-    return `${classification[0].name} (${percentBaggedText})`
+    return {
+      title: `${classification[0].name} (${percentBaggedText})`,
+      subtitle: classification[0].description,
+    }
   }
 
   return (
@@ -114,11 +124,11 @@ export default function MapScreen() {
           let description = `${fell.elevation} m`
 
           if (fell.bagDates.length === 1) {
-            description += `Bagged once, on ${formatDate(fell.bagDates[0])}`
+            description += ` Bagged once, on ${formatDate(fell.bagDates[0])}`
           } else if (fell.bagDates.length === 2) {
-            description += `Bagged twice, on ${formatDate(fell.bagDates[0])} and ${formatDate(fell.bagDates[1])}`
+            description += ` Bagged twice, on ${formatDate(fell.bagDates[0])} and ${formatDate(fell.bagDates[1])}`
           } else if (fell.bagDates.length >= 3) {
-            description += `Bagged ${fell.bagDates.length} times, from ${formatDate(
+            description += ` Bagged ${fell.bagDates.length} times, from ${formatDate(
               fell.bagDates[0],
             )} to ${formatDate(fell.bagDates[fell.bagDates.length - 1])}`
           }
@@ -141,15 +151,27 @@ export default function MapScreen() {
           )
         })}
       </MapView>
-      <View style={styles.pickerContainer}>
-        <Text style={styles.pickerText}>
-          {getClassificationText(selectedClassification)}
-        </Text>
+      <View
+        style={[styles.pickerContainer, { minHeight: pickerContentHeight }]}>
+        <View
+          style={styles.pickerTextWrap}
+          pointerEvents='none'
+          onLayout={(e) => {
+            const measuredHeight = e.nativeEvent.layout.height
+            setPickerContentHeight(Math.max(64, measuredHeight + 16)) // 16 = top/bottom padding
+          }}>
+          <Text style={styles.pickerText}>
+            {getClassificationText(selectedClassification).title}
+          </Text>
+          <Text style={styles.pickerTextSub}>
+            {getClassificationText(selectedClassification).subtitle}
+          </Text>
+        </View>
 
         <Picker
           selectedValue={selectedClassification}
           onValueChange={(value) => setSelectedClassification(value)}
-          style={styles.picker}
+          style={[styles.picker, { height: pickerContentHeight }]}
           dropdownIconColor={COLOURS.text}>
           <Picker.Item label='All bagged fells' value={-1} />
           {classifications.map((classification) => (
@@ -179,25 +201,32 @@ const styles = StyleSheet.create({
     top: 40,
     left: 20,
     right: 20,
-    height: 50,
     backgroundColor: COLOURS.card,
     borderRadius: 10,
-    overflow: "hidden",
     justifyContent: "center",
   },
 
-  pickerText: {
+  pickerTextWrap: {
     position: "absolute",
     left: 15,
+    right: 15,
+    top: 8,
+  },
+
+  pickerText: {
     color: COLOURS.text,
     fontSize: 16,
-    zIndex: 1,
+  },
+
+  pickerTextSub: {
+    color: COLOURS.text,
+    fontSize: 10,
+    marginTop: 2,
   },
 
   picker: {
     color: "transparent",
     backgroundColor: "transparent",
-    height: 50,
   },
 
   pickerItem: {

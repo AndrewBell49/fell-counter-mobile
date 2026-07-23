@@ -36,3 +36,16 @@ export interface IGetFellLocations {
   longitude: number
   bagDates: string[]
 }
+
+export interface IGetSportCount {
+  sport: string
+  count: number
+}
+
+export interface IGetActivityDistanceInDateOrder extends Record<
+  string,
+  unknown
+> {
+  kms: number
+  month: string
+}

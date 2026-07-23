@@ -30,7 +30,7 @@ function getMaxMinText(boxPlotData: IGetBagHeightBoxPlot | null): string {
   let max = boxPlotData.max
   let min = boxPlotData.min
   if (boxPlotData.outliersMax.length > 0) {
-    max = boxPlotData.outliersMax.sort()[0]
+    max = boxPlotData.outliersMax.sort()[boxPlotData.outliersMax.length - 1]
   }
   if (boxPlotData.outliersMin.length > 0) {
     min = boxPlotData.outliersMin.sort()[0]

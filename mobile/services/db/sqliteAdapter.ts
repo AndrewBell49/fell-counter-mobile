@@ -18,6 +18,8 @@ import type {
   Fell,
   FellClassification,
 } from "./sqlite/schema"
+import { getSportCounts } from "./sqlite/visuals/getActivityCounts"
+import { getActivityDistanceInDateOrder } from "./sqlite/visuals/getActivityDistanceInDateOrder"
 import { getAllClassifications } from "./sqlite/visuals/getAllClassifications"
 import { getBagCount } from "./sqlite/visuals/getBagCount"
 import { getBagHeightBoxPlot } from "./sqlite/visuals/getBagHeightBoxPlot"
@@ -25,12 +27,14 @@ import { getBagLocationsByClassification } from "./sqlite/visuals/getBagLocation
 import { getBagsByCountry } from "./sqlite/visuals/getBagsByCountry"
 import { getBagsInDateOrder } from "./sqlite/visuals/getBagsInDateOrder"
 import type {
+  IGetActivityDistanceInDateOrder,
   IGetBagCount,
   IGetBagHeightBoxPlot,
   IGetBagsInDateOrder,
   IGetCountryBag,
   IGetFellLocations,
   IGetMaxMinBagDate,
+  IGetSportCount,
 } from "./types"
 
 export class SQLiteAdapter implements DatabaseAdapter {
@@ -77,7 +81,7 @@ export class SQLiteAdapter implements DatabaseAdapter {
     return getMaxMinBagDate(this.db)
   }
 
-  // Visuals
+  // Bag Visuals
   getBagCount(): Promise<IGetBagCount> {
     return getBagCount(this.db)
   }
@@ -89,6 +93,16 @@ export class SQLiteAdapter implements DatabaseAdapter {
   }
   getBagsByCountry(): Promise<IGetCountryBag[]> {
     return getBagsByCountry(this.db)
+  }
+
+  // Activity Visuals
+  getSportCounts(): Promise<IGetSportCount[]> {
+    return getSportCounts(this.db)
+  }
+  getActivityDistanceInDateOrder(
+    sport: string,
+  ): Promise<IGetActivityDistanceInDateOrder[]> {
+    return getActivityDistanceInDateOrder(sport, this.db)
   }
 
   // Maps

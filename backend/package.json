@@ -7,6 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "concurrently \"npx tsx watch server.ts\" \"ngrok http 3000\"",
     "db:seed": "tsx db/seed/seed.ts",
+    "db:update": "tsx db/seed/update.ts",
     "db:migrate": "npx drizzle-kit push"
   },
   "keywords": [],

@@ -7,6 +7,7 @@ export function CountryPie() {
   const database = useDatabase()
   const [countryData, setCountryData] = useState<IGetCountryBag[] | null>(null)
   const [bagCount, setBagCount] = useState<IGetBagCount | null>(null)
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
 
   useEffect(() => {
     if (!database) return
@@ -22,13 +23,17 @@ export function CountryPie() {
   return (
     <PieChart
       data={
-        countryData?.map((data) => {
-          return { label: data.country, count: data.count }
-        }) || null
+        countryData
+          ?.map((data) => {
+            return { label: data.country, count: data.count }
+          })
+          .sort((a, b) => b.count - a.count) || null
       }
       title='Bags per country'
       centerLabel={`${bagCount?.count} bags`}
       centerLabelSub={`${bagCount?.distinctCount} distinct`}
+      selectedIndex={selectedIndex}
+      setSelectedIndex={setSelectedIndex}
     />
   )
 }

@@ -3,6 +3,7 @@ import { Text } from "@/components/utils/Text"
 import { BagsOverTime } from "@/components/visuals/BagsOverTime"
 import { CountryPie } from "@/components/visuals/CountryPie"
 import { FellHeightBoxPlot } from "@/components/visuals/FellHeightBoxPlot"
+import { COLOURS } from "@/constants/colours"
 import { UserContext } from "@/context/UserContext"
 import { useContext } from "react"
 import { ScrollView, StyleSheet } from "react-native"
@@ -28,6 +29,7 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     padding: 10,
     gap: 10,
+    backgroundColor: COLOURS.background,
   },
   text: {
     display: "flex",

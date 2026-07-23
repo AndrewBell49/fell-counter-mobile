@@ -56,9 +56,9 @@ file_mappings = [
     {"file": "osm_data/czech-republic.osm.pbf", "country": "Czechia"},
     {"file": "osm_data/denmark.osm.pbf", "country": "Denmark"},
     {"file": "osm_data/germany.osm.pbf", "country": "Germany"},
-    {"file": "osm_data/guernsey-jersey.osm.pbf", "country": "GB"},
-    {"file": "osm_data/ireland.osm.pbf", "country": "Ireland"},
-    {"file": "osm_data/isle-of-man.osm.pbf", "country": "GB"},
+    {"file": "osm_data/guernsey-jersey.osm.pbf", "country": "UK & Ireland"},
+    {"file": "osm_data/ireland.osm.pbf", "country": "UK & Ireland"},
+    {"file": "osm_data/isle-of-man.osm.pbf", "country": "UK & Ireland"},
     {"file": "osm_data/italy.osm.pbf", "country": "Italy"},
     {"file": "osm_data/liechtenstein.osm.pbf", "country": "Liechtenstein"},
     {"file": "osm_data/luxembourg.osm.pbf", "country": "Luxembourg"},
@@ -68,7 +68,7 @@ file_mappings = [
     {"file": "osm_data/slovenia.osm.pbf", "country": "Slovenia"},
     {"file": "osm_data/spain.osm.pbf", "country": "Spain"},
     {"file": "osm_data/switzerland.osm.pbf", "country": "Switzerland"},
-    {"file": "osm_data/united-kingdom.osm.pbf", "country": "GB"},
+    {"file": "osm_data/united-kingdom.osm.pbf", "country": "UK & Ireland"},
 ]
 
 
