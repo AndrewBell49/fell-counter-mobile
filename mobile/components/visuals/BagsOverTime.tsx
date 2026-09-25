@@ -20,8 +20,10 @@ export function BagsOverTime() {
   return (
     <LineGraph
       title='Bags over time'
-      data={bagGraphData}
-      xKey='month'
-      yKey='bags'></LineGraph>
+      data={
+        bagGraphData?.map((d) => ({ xData: d.month, yData: d.bags })) || null
+      }
+      yLabel={"Bags"}
+    />
   )
 }

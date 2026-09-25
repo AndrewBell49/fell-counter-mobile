@@ -1,43 +1,27 @@
 import { COLOURS } from "@/constants/colours"
-import { useEffect, useRef, useState } from "react"
-import { ScrollView, StyleSheet, View } from "react-native"
-import { LineChart } from "react-native-chart-kit"
+import { useState } from "react"
+import { View } from "react-native"
+import { LineChart } from "react-native-chart-kit/v2"
 import { Loading } from "./Loading"
 import { Visual } from "./Visual"
 
-interface LineGraphProps<T extends Record<string, unknown>> {
+interface LineGraphProps {
   title: string
-  data: T[] | null
-  xKey: keyof T
-  yKey: keyof T
-  colour?: string
+  data: { xData: string; yData: number }[] | null
+  yLabel: string
+  formatYLabel?: ((value: number) => string) | undefined
 }
 
-function hexToRgba(hex: string, opacity: number) {
-  const parsed = hex.replace("#", "")
-  const r = parseInt(parsed.substring(0, 2), 16)
-  const g = parseInt(parsed.substring(2, 4), 16)
-  const b = parseInt(parsed.substring(4, 6), 16)
-  return `rgba(${r}, ${g}, ${b}, ${opacity})`
-}
-
-export function LineGraph<T extends Record<string, unknown>>({
+export function LineGraph({
   title,
   data,
-  xKey,
-  yKey,
-  colour,
-}: LineGraphProps<T>) {
+  yLabel,
+  formatYLabel,
+}: LineGraphProps) {
   const [chartWidth, setChartWidth] = useState(0)
-  const scrollRef = useRef<ScrollView>(null)
-
-  useEffect(() => {
-    if (data && data.length > 0) {
-      setTimeout(() => {
-        scrollRef.current?.scrollToEnd({ animated: false })
-      }, 50)
-    }
-  }, [data])
+  const [selectedIndex, setSelectedIndex] = useState<number | undefined>(
+    undefined,
+  )
 
   if (!data) {
     return (
@@ -47,52 +31,40 @@ export function LineGraph<T extends Record<string, unknown>>({
     )
   }
 
-  const labels = data.map((d) => String(d[xKey]))
-  const values = data.map((d) => Number(d[yKey]))
-
   return (
     <Visual title={title}>
       <View onLayout={(e) => setChartWidth(e.nativeEvent.layout.width)}>
-        <ScrollView ref={scrollRef} horizontal showsHorizontalScrollIndicator>
-          <LineChart
-            data={{
-              labels,
-              datasets: [{ data: values }],
-            }}
-            width={Math.max(chartWidth, labels.length * 50)}
-            height={280}
-            fromZero
-            withInnerLines
-            withOuterLines
-            withVerticalLines
-            withHorizontalLines
-            formatYLabel={(y) => Math.round(Number(y)).toString()}
-            chartConfig={{
-              backgroundGradientFrom: COLOURS.card,
-              backgroundGradientTo: COLOURS.card,
-              fillShadowGradientOpacity: 0,
-              color: (opacity = 1) =>
-                hexToRgba(colour || COLOURS.graph, opacity),
-              labelColor: () => COLOURS.text,
-              propsForDots: {
-                r: "3",
-              },
-            }}
-            style={styles.chart}
-          />
-        </ScrollView>
+        <LineChart
+          data={data}
+          xKey={"xData"}
+          series={[{ yKey: "yData", label: yLabel }]}
+          width={chartWidth}
+          height={280}
+          scrollable
+          visiblePoints={10}
+          initialIndex='end'
+          showHorizontalGridLines
+          showVerticalGridLines
+          area={false}
+          dots={{ radius: 3 }}
+          formatYLabel={formatYLabel}
+          selectedIndex={selectedIndex}
+          activeDot={{ radius: 4 }}
+          interaction={{
+            mode: "tap",
+            selectionPersistence: "persist",
+            onSelect: (event) => {
+              setSelectedIndex(event.index)
+            },
+          }}
+          tooltip
+          theme={{
+            background: COLOURS.card,
+            text: COLOURS.text,
+            series: [COLOURS.graph],
+          }}
+        />
       </View>
     </Visual>
   )
 }
-
-const styles = StyleSheet.create({
-  title: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 8,
-  },
-  chart: {
-    borderRadius: 12,
-  },
-})

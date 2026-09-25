@@ -23,10 +23,13 @@ export function DistanceOverTime() {
 
   return (
     <LineGraph
-      title='Distance over time'
-      data={distanceGraphData}
-      xKey='month'
-      yKey='kms'
+      title={`${allSports[selectedSportIdx].sport} distance over time`}
+      data={
+        distanceGraphData?.map((d) => ({ xData: d.month, yData: d.kms })) ||
+        null
+      }
+      yLabel={"Distance"}
+      formatYLabel={(y) => `${Math.round(y)} km`}
     />
   )
 }
