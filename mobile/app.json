@@ -6,7 +6,7 @@
     "orientation": "default",
     "scheme": "fellcounter",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": false,
+    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
     },
