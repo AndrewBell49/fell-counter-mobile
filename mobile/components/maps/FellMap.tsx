@@ -1,8 +1,8 @@
-import { COLOURS } from "@/constants/colours"
 import { IGetFellLocations } from "@/services/db/types"
-import React, { useEffect, useMemo, useRef, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Animated, StyleSheet, View } from "react-native"
 import MapView, { Marker, PROVIDER_GOOGLE, Region } from "react-native-maps"
+import Svg, { Circle } from "react-native-svg"
 import Supercluster from "supercluster"
 import { Text } from "../utils/Text"
 
@@ -16,7 +16,13 @@ type IndividualFellProps = {
   fellId: string | number
   fell: IGetFellLocations
 }
-type ClusterProps = { cluster: true; point_count: number; cluster_id: number }
+type ClusterAggregatedProps = { baggedCount: number }
+type ClusterProps = {
+  cluster: true
+  point_count: number
+  cluster_id: number
+  baggedCount: number
+}
 type MapFeatureProps = IndividualFellProps | ClusterProps
 
 const formatDate = (timestamp: string | number) => {
@@ -43,16 +49,57 @@ const getFellDescription = (fell: IGetFellLocations): string => {
   return desc
 }
 
+function getProgressColor(ratio: number, lightness = 42): string {
+  const safeRatio = Math.max(0, Math.min(1, ratio))
+  const hue = Math.round(safeRatio * 120) // 0° = Red, 60° = Yellow, 120° = Green
+  return `hsl(${hue}, 85%, ${lightness}%)`
+}
+
+function getRelativeClusterSize(
+  count: number,
+  minCount: number,
+  maxCount: number,
+): number {
+  const MIN_SIZE = 38
+  const MAX_SIZE = 58
+
+  if (minCount === maxCount) {
+    return 44
+  }
+
+  const scale = (count - minCount) / (maxCount - minCount)
+  return Math.round(MIN_SIZE + scale * (MAX_SIZE - MIN_SIZE))
+}
+
 export function FellMap({ data }: FellMapProps) {
   const mapRef = useRef<MapView>(null)
+  const [isMapReady, setIsMapReady] = useState(false)
 
+  // Calculate exact bounding center across all fells for initial camera render
   const initialRegion: Region = useMemo(() => {
     if (data && data.length > 0) {
+      let minLat = data[0].latitude
+      let maxLat = data[0].latitude
+      let minLng = data[0].longitude
+      let maxLng = data[0].longitude
+
+      data.forEach((f) => {
+        if (f.latitude < minLat) minLat = f.latitude
+        if (f.latitude > maxLat) maxLat = f.latitude
+        if (f.longitude < minLng) minLng = f.longitude
+        if (f.longitude > maxLng) maxLng = f.longitude
+      })
+
+      const centerLat = (minLat + maxLat) / 2
+      const centerLng = (minLng + maxLng) / 2
+      const latDelta = Math.max(0.15, (maxLat - minLat) * 1.3)
+      const lngDelta = Math.max(0.15, (maxLng - minLng) * 1.3)
+
       return {
-        latitude: data[0].latitude,
-        longitude: data[0].longitude,
-        latitudeDelta: 0.35,
-        longitudeDelta: 0.35,
+        latitude: centerLat,
+        longitude: centerLng,
+        latitudeDelta: latDelta,
+        longitudeDelta: lngDelta,
       }
     }
     return {
@@ -67,9 +114,9 @@ export function FellMap({ data }: FellMapProps) {
   const [tracksViewChanges, setTracksViewChanges] = useState(true)
   const trackingTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Smoothly adjust camera bounds whenever classification data updates
-  useEffect(() => {
-    if (data && data.length > 0 && mapRef.current) {
+  // Fits camera to exact coordinates once native map layout is fully ready
+  const fitMapToBounds = useCallback(() => {
+    if (data && data.length > 0 && mapRef.current && isMapReady) {
       mapRef.current.fitToCoordinates(
         data.map((f) => ({ latitude: f.latitude, longitude: f.longitude })),
         {
@@ -78,7 +125,11 @@ export function FellMap({ data }: FellMapProps) {
         },
       )
     }
-  }, [data])
+  }, [data, isMapReady])
+
+  useEffect(() => {
+    fitMapToBounds()
+  }, [fitMapToBounds])
 
   useEffect(() => {
     return () => {
@@ -86,7 +137,7 @@ export function FellMap({ data }: FellMapProps) {
     }
   }, [])
 
-  // 1. GeoJSON conversion
+  // 1. GeoJSON point mapping
   const points = useMemo(() => {
     return data.map((fell) => ({
       type: "Feature" as const,
@@ -102,17 +153,24 @@ export function FellMap({ data }: FellMapProps) {
     }))
   }, [data])
 
-  // 2. Supercluster initialization
+  // 2. Supercluster instance
   const index = useMemo(() => {
-    const sc = new Supercluster<IndividualFellProps>({
-      radius: 50,
+    const sc = new Supercluster<IndividualFellProps, ClusterAggregatedProps>({
+      radius: 70,
       maxZoom: 15,
+      map: (props) => ({
+        baggedCount:
+          props.fell?.bagDates && props.fell.bagDates.length > 0 ? 1 : 0,
+      }),
+      reduce: (accumulated, props) => {
+        accumulated.baggedCount += props.baggedCount
+      },
     })
     sc.load(points)
     return sc
   }, [points])
 
-  // 3. Region conversion
+  // 3. Viewport BBox & zoom calculation
   const zoom = getZoomLevel(region.longitudeDelta)
   const bbox: BBox = [
     region.longitude - region.longitudeDelta / 2,
@@ -121,12 +179,27 @@ export function FellMap({ data }: FellMapProps) {
     region.latitude + region.latitudeDelta / 2,
   ]
 
-  // 4. Visible cluster calculation
-  const clusters = useMemo(() => {
-    return index.getClusters(bbox, zoom)
+  // 4. Retrieve visible clusters
+  const { visibleClusters, minClusterCount, maxClusterCount } = useMemo(() => {
+    const clusters = index.getClusters(bbox, zoom)
+    let min = Infinity
+    let max = -Infinity
+
+    clusters.forEach((item) => {
+      if (item.properties.cluster) {
+        const count = item.properties.point_count
+        if (count < min) min = count
+        if (count > max) max = count
+      }
+    })
+
+    return {
+      visibleClusters: clusters,
+      minClusterCount: min === Infinity ? 1 : min,
+      maxClusterCount: max === -Infinity ? 1 : max,
+    }
   }, [index, bbox, zoom])
 
-  // 5. Region change tracking without LayoutAnimation
   const handleRegionChangeComplete = (newRegion: Region) => {
     setTracksViewChanges(true)
     setRegion(newRegion)
@@ -138,7 +211,6 @@ export function FellMap({ data }: FellMapProps) {
     }, 350)
   }
 
-  // 6. Cluster zoom handler
   const handleClusterPress = (clusterId: number) => {
     const leaves = index.getLeaves(clusterId, Infinity)
     const coordinates = leaves.map((leaf) => ({
@@ -160,15 +232,22 @@ export function FellMap({ data }: FellMapProps) {
         mapType='terrain'
         style={styles.map}
         initialRegion={initialRegion}
+        onMapReady={() => setIsMapReady(true)}
         onRegionChangeComplete={handleRegionChangeComplete}>
-        {clusters.map((item) => {
+        {visibleClusters.map((item) => {
           const [longitude, latitude] = item.geometry.coordinates
           const properties = item.properties as MapFeatureProps
 
-          // Render Cluster Marker
           if (properties.cluster) {
-            // Key includes coordinates & count so native view recycles safely when switching classifications
-            const clusterKey = `cluster-${item.id}-${longitude.toFixed(4)}-${latitude.toFixed(4)}-${properties.point_count}`
+            const baggedCount = properties.baggedCount || 0
+            const pointCount = properties.point_count || 1
+
+            const clusterSize = getRelativeClusterSize(
+              pointCount,
+              minClusterCount,
+              maxClusterCount,
+            )
+            const clusterKey = `cluster-${item.id}-${longitude.toFixed(4)}-${latitude.toFixed(4)}-${pointCount}-${baggedCount}-${clusterSize}`
 
             return (
               <Marker
@@ -176,12 +255,15 @@ export function FellMap({ data }: FellMapProps) {
                 coordinate={{ latitude, longitude }}
                 tracksViewChanges={tracksViewChanges}
                 onPress={() => handleClusterPress(properties.cluster_id)}>
-                <ClusterMarker count={properties.point_count} />
+                <ClusterMarker
+                  count={pointCount}
+                  baggedCount={baggedCount}
+                  size={clusterSize}
+                />
               </Marker>
             )
           }
 
-          // Render Individual Fell Marker
           const { fell } = properties
           const isClimbed = fell.bagDates && fell.bagDates.length > 0
 
@@ -202,38 +284,92 @@ export function FellMap({ data }: FellMapProps) {
 }
 
 // -----------------------------------------------------------------------------
-// Sub-components
+// Scalable SVG Cluster Component
 // -----------------------------------------------------------------------------
 
-const ClusterMarker = React.memo(({ count }: { count: number }) => {
-  const scaleAnim = useRef(new Animated.Value(0.4)).current
+interface ClusterMarkerProps {
+  count: number
+  baggedCount: number
+  size: number
+}
 
-  useEffect(() => {
-    scaleAnim.setValue(0.4)
-    Animated.spring(scaleAnim, {
-      toValue: 1,
-      friction: 6,
-      tension: 40,
-      useNativeDriver: true,
-    }).start()
-  }, [count])
+const ClusterMarker = React.memo(
+  ({ count, baggedCount, size }: ClusterMarkerProps) => {
+    const scaleAnim = useRef(new Animated.Value(0.4)).current
+    const ratio = count > 0 ? baggedCount / count : 0
+    const fillColor = getProgressColor(ratio, 42)
 
-  return (
-    <Animated.View
-      style={[
-        styles.clusterBadge,
-        {
-          transform: [{ scale: scaleAnim }],
-        },
-      ]}>
-      <Text style={styles.clusterText}>{count}</Text>
-    </Animated.View>
-  )
-})
+    useEffect(() => {
+      scaleAnim.setValue(0.4)
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        friction: 6,
+        tension: 40,
+        useNativeDriver: true,
+      }).start()
+    }, [count, baggedCount, size])
+
+    const strokeWidth = 4
+    const radius = (size - strokeWidth) / 2
+    const circumference = 2 * Math.PI * radius
+    const strokeDashoffset = circumference * (1 - ratio)
+    const fontSize = Math.max(11, Math.round(size * 0.32))
+
+    return (
+      <Animated.View
+        style={[
+          styles.clusterContainer,
+          { width: size, height: size, transform: [{ scale: scaleAnim }] },
+        ]}>
+        <Svg width={size} height={size}>
+          <Circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            stroke='#000000'
+            strokeWidth={strokeWidth}
+            fill='none'
+          />
+
+          {ratio > 0 && (
+            <Circle
+              cx={size / 2}
+              cy={size / 2}
+              r={radius}
+              stroke='#FFFFFF'
+              strokeWidth={strokeWidth}
+              fill='none'
+              strokeDasharray={`${circumference} ${circumference}`}
+              strokeDashoffset={strokeDashoffset}
+              strokeLinecap='butt'
+              origin={`${size / 2}, ${size / 2}`}
+              rotation='-90'
+            />
+          )}
+
+          <Circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius - strokeWidth / 2}
+            fill={fillColor}
+          />
+        </Svg>
+
+        <View style={styles.clusterTextOverlay}>
+          <Text style={[styles.clusterTextMain, { fontSize }]}>{count}</Text>
+        </View>
+      </Animated.View>
+    )
+  },
+)
 
 function getZoomLevel(longitudeDelta: number): number {
   return Math.round(Math.log2(360 / (longitudeDelta || 1)))
 }
+
+// -----------------------------------------------------------------------------
+// Styles
+// -----------------------------------------------------------------------------
 
 const styles = StyleSheet.create({
   container: {
@@ -242,20 +378,22 @@ const styles = StyleSheet.create({
   map: {
     ...StyleSheet.absoluteFillObject,
   },
-  clusterBadge: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: COLOURS.graph || "#2563EB",
-    borderColor: "#FFFFFF",
-    borderWidth: 2,
+  clusterContainer: {
     alignItems: "center",
     justifyContent: "center",
-    elevation: 4,
+    elevation: 6,
+    shadowColor: "#000000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3,
   },
-  clusterText: {
+  clusterTextOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  clusterTextMain: {
     color: "#FFFFFF",
-    fontWeight: "800",
-    fontSize: 14,
+    fontWeight: "900",
   },
 })
