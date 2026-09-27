@@ -1,69 +1,92 @@
 import { COLOURS } from "@/constants/colours"
+import { IGetFellLocations } from "@/services/db/types"
 import React, { useEffect, useMemo, useRef, useState } from "react"
-import {
-  Animated,
-  LayoutAnimation,
-  Platform,
-  StyleSheet,
-  UIManager,
-  View,
-} from "react-native"
+import { Animated, StyleSheet, View } from "react-native"
 import MapView, { Marker, PROVIDER_GOOGLE, Region } from "react-native-maps"
 import Supercluster from "supercluster"
 import { Text } from "../utils/Text"
 
-// Enable native LayoutAnimation on Android
-if (
-  Platform.OS === "android" &&
-  UIManager.setLayoutAnimationEnabledExperimental
-) {
-  UIManager.setLayoutAnimationEnabledExperimental(true)
-}
-
-export interface FellPoint {
-  id: string
-  name: string
-  height: number
-  latitude: number
-  longitude: number
-  isClimbed: boolean
-}
-
 interface FellMapProps {
-  data: FellPoint[]
+  data: IGetFellLocations[]
 }
 
 type BBox = [number, number, number, number]
-type IndividualFellProps = { cluster: false; fellId: string; fell: FellPoint }
+type IndividualFellProps = {
+  cluster: false
+  fellId: string | number
+  fell: IGetFellLocations
+}
 type ClusterProps = { cluster: true; point_count: number; cluster_id: number }
 type MapFeatureProps = IndividualFellProps | ClusterProps
 
-const INITIAL_REGION: Region = {
-  latitude: 54.45,
-  longitude: -3.1,
-  latitudeDelta: 0.35,
-  longitudeDelta: 0.35,
+const formatDate = (timestamp: string | number) => {
+  const date = new Date(Number(timestamp))
+  return `${String(date.getDate()).padStart(2, "0")}/${String(
+    date.getMonth() + 1,
+  ).padStart(2, "0")}/${date.getFullYear()}`
+}
+
+const getFellDescription = (fell: IGetFellLocations): string => {
+  let desc = `${fell.elevation || 0} m`
+  const bagDates = fell.bagDates || []
+
+  if (bagDates.length === 0) {
+    desc += " (Not Climbed)"
+  } else if (bagDates.length === 1) {
+    desc += ` • Bagged once, on ${formatDate(bagDates[0])}`
+  } else if (bagDates.length === 2) {
+    desc += ` • Bagged twice, on ${formatDate(bagDates[0])} & ${formatDate(bagDates[1])}`
+  } else if (bagDates.length >= 3) {
+    desc += ` • Bagged ${bagDates.length} times, from ${formatDate(bagDates[0])} to ${formatDate(bagDates[bagDates.length - 1])}`
+  }
+
+  return desc
 }
 
 export function FellMap({ data }: FellMapProps) {
   const mapRef = useRef<MapView>(null)
-  const [region, setRegion] = useState<Region>(INITIAL_REGION)
 
-  // Tracks view changes dynamically to allow smooth rendering during map movements
+  const initialRegion: Region = useMemo(() => {
+    if (data && data.length > 0) {
+      return {
+        latitude: data[0].latitude,
+        longitude: data[0].longitude,
+        latitudeDelta: 0.35,
+        longitudeDelta: 0.35,
+      }
+    }
+    return {
+      latitude: 54.45,
+      longitude: -3.1,
+      latitudeDelta: 0.35,
+      longitudeDelta: 0.35,
+    }
+  }, [data])
+
+  const [region, setRegion] = useState<Region>(initialRegion)
   const [tracksViewChanges, setTracksViewChanges] = useState(true)
-  // ReturnType<typeof setTimeout> fixes the TypeScript 'Timeout' vs 'number' mismatch
   const trackingTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Cleanup timeout on unmount
+  // Smoothly adjust camera bounds whenever classification data updates
+  useEffect(() => {
+    if (data && data.length > 0 && mapRef.current) {
+      mapRef.current.fitToCoordinates(
+        data.map((f) => ({ latitude: f.latitude, longitude: f.longitude })),
+        {
+          edgePadding: { top: 140, right: 50, bottom: 50, left: 50 },
+          animated: true,
+        },
+      )
+    }
+  }, [data])
+
   useEffect(() => {
     return () => {
-      if (trackingTimeout.current) {
-        clearTimeout(trackingTimeout.current)
-      }
+      if (trackingTimeout.current) clearTimeout(trackingTimeout.current)
     }
   }, [])
 
-  // 1. Convert FellPoint data to GeoJSON for supercluster
+  // 1. GeoJSON conversion
   const points = useMemo(() => {
     return data.map((fell) => ({
       type: "Feature" as const,
@@ -79,7 +102,7 @@ export function FellMap({ data }: FellMapProps) {
     }))
   }, [data])
 
-  // 2. Initialize supercluster instance
+  // 2. Supercluster initialization
   const index = useMemo(() => {
     const sc = new Supercluster<IndividualFellProps>({
       radius: 50,
@@ -89,7 +112,7 @@ export function FellMap({ data }: FellMapProps) {
     return sc
   }, [points])
 
-  // 3. Convert region to bounding box & zoom level
+  // 3. Region conversion
   const zoom = getZoomLevel(region.longitudeDelta)
   const bbox: BBox = [
     region.longitude - region.longitudeDelta / 2,
@@ -98,30 +121,24 @@ export function FellMap({ data }: FellMapProps) {
     region.latitude + region.latitudeDelta / 2,
   ]
 
-  // 4. Retrieve visible clusters and single points
+  // 4. Visible cluster calculation
   const clusters = useMemo(() => {
     return index.getClusters(bbox, zoom)
   }, [index, bbox, zoom])
 
-  // 5. Smoothly handle region changes with animations & anti-flicker timer
+  // 5. Region change tracking without LayoutAnimation
   const handleRegionChangeComplete = (newRegion: Region) => {
     setTracksViewChanges(true)
-
-    // Configure layout transition for cluster merges/splits
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
     setRegion(newRegion)
 
-    if (trackingTimeout.current) {
-      clearTimeout(trackingTimeout.current)
-    }
+    if (trackingTimeout.current) clearTimeout(trackingTimeout.current)
 
-    // Lock marker view changes 350ms after pan/zoom stops to freeze performance flickering
     trackingTimeout.current = setTimeout(() => {
       setTracksViewChanges(false)
     }, 350)
   }
 
-  // 6. Zoom to fit all fells within a tapped cluster
+  // 6. Cluster zoom handler
   const handleClusterPress = (clusterId: number) => {
     const leaves = index.getLeaves(clusterId, Infinity)
     const coordinates = leaves.map((leaf) => ({
@@ -130,7 +147,7 @@ export function FellMap({ data }: FellMapProps) {
     }))
 
     mapRef.current?.fitToCoordinates(coordinates, {
-      edgePadding: { top: 60, right: 60, bottom: 60, left: 60 },
+      edgePadding: { top: 120, right: 60, bottom: 60, left: 60 },
       animated: true,
     })
   }
@@ -142,17 +159,20 @@ export function FellMap({ data }: FellMapProps) {
         provider={PROVIDER_GOOGLE}
         mapType='terrain'
         style={styles.map}
-        initialRegion={INITIAL_REGION}
+        initialRegion={initialRegion}
         onRegionChangeComplete={handleRegionChangeComplete}>
         {clusters.map((item) => {
           const [longitude, latitude] = item.geometry.coordinates
           const properties = item.properties as MapFeatureProps
 
-          // Render Cluster Pin
+          // Render Cluster Marker
           if (properties.cluster) {
+            // Key includes coordinates & count so native view recycles safely when switching classifications
+            const clusterKey = `cluster-${item.id}-${longitude.toFixed(4)}-${latitude.toFixed(4)}-${properties.point_count}`
+
             return (
               <Marker
-                key={`cluster-${item.id}`}
+                key={clusterKey}
                 coordinate={{ latitude, longitude }}
                 tracksViewChanges={tracksViewChanges}
                 onPress={() => handleClusterPress(properties.cluster_id)}>
@@ -161,15 +181,17 @@ export function FellMap({ data }: FellMapProps) {
             )
           }
 
-          // Render Native Fell Pin
+          // Render Individual Fell Marker
           const { fell } = properties
+          const isClimbed = fell.bagDates && fell.bagDates.length > 0
+
           return (
             <Marker
               key={`fell-${fell.id}`}
               coordinate={{ latitude, longitude }}
-              pinColor={fell.isClimbed ? "green" : "red"}
+              pinColor={isClimbed ? "green" : "red"}
               title={fell.name}
-              description={`Elevation: ${fell.height}m (${fell.isClimbed ? "Climbed" : "Not Climbed"})`}
+              description={getFellDescription(fell)}
               tracksViewChanges={tracksViewChanges}
             />
           )
@@ -183,9 +205,6 @@ export function FellMap({ data }: FellMapProps) {
 // Sub-components
 // -----------------------------------------------------------------------------
 
-/**
- * Cluster badge featuring a spring scale pop animation on creation/count change.
- */
 const ClusterMarker = React.memo(({ count }: { count: number }) => {
   const scaleAnim = useRef(new Animated.Value(0.4)).current
 
@@ -215,10 +234,6 @@ const ClusterMarker = React.memo(({ count }: { count: number }) => {
 function getZoomLevel(longitudeDelta: number): number {
   return Math.round(Math.log2(360 / (longitudeDelta || 1)))
 }
-
-// -----------------------------------------------------------------------------
-// Styles
-// -----------------------------------------------------------------------------
 
 const styles = StyleSheet.create({
   container: {
