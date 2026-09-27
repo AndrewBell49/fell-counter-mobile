@@ -284,7 +284,7 @@ export function FellMap({ data }: FellMapProps) {
 }
 
 // -----------------------------------------------------------------------------
-// Scalable SVG Cluster Component
+// Scalable SVG Cluster Marker (With Anti-Aliasing Buffer)
 // -----------------------------------------------------------------------------
 
 interface ClusterMarkerProps {
@@ -310,7 +310,9 @@ const ClusterMarker = React.memo(
     }, [count, baggedCount, size])
 
     const strokeWidth = 4
-    const radius = (size - strokeWidth) / 2
+    // 2px buffer pulls the stroke away from the canvas edges to prevent clipping
+    const paddingBuffer = 2
+    const radius = (size - strokeWidth) / 2 - paddingBuffer
     const circumference = 2 * Math.PI * radius
     const strokeDashoffset = circumference * (1 - ratio)
     const fontSize = Math.max(11, Math.round(size * 0.32))
@@ -322,6 +324,7 @@ const ClusterMarker = React.memo(
           { width: size, height: size, transform: [{ scale: scaleAnim }] },
         ]}>
         <Svg width={size} height={size}>
+          {/* Base Outer Ring (Black) */}
           <Circle
             cx={size / 2}
             cy={size / 2}
@@ -331,6 +334,7 @@ const ClusterMarker = React.memo(
             fill='none'
           />
 
+          {/* Progress Arc (White) */}
           {ratio > 0 && (
             <Circle
               cx={size / 2}
@@ -347,14 +351,16 @@ const ClusterMarker = React.memo(
             />
           )}
 
+          {/* Inner Core Circle */}
           <Circle
             cx={size / 2}
             cy={size / 2}
-            r={radius - strokeWidth / 2}
+            r={radius - strokeWidth / 2 + 0.5}
             fill={fillColor}
           />
         </Svg>
 
+        {/* Scaled Text Overlay */}
         <View style={styles.clusterTextOverlay}>
           <Text style={[styles.clusterTextMain, { fontSize }]}>{count}</Text>
         </View>
