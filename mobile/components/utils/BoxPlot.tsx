@@ -1,14 +1,19 @@
 import { COLOURS } from "@/constants/colours"
 import { IGetBagHeightBoxPlot } from "@/services/db/types"
-import React, { useState } from "react"
-import { LayoutChangeEvent, StyleSheet, View } from "react-native"
+import React, { useEffect, useRef, useState } from "react"
+import { Animated, LayoutChangeEvent, StyleSheet, View } from "react-native"
 import { Loading } from "./Loading"
+import { Slider } from "./Slider"
 import { Text } from "./Text"
 import { Visual } from "./Visual"
+
+const AnimatedText = Animated.createAnimatedComponent(Text)
 
 interface Props {
   data: IGetBagHeightBoxPlot | null
   title: string
+  includeOutliers?: boolean
+  onIncludeOutliersChange?: (value: boolean) => void
 }
 
 const CHART_HEIGHT = 100
@@ -18,7 +23,12 @@ const LABEL_ROW_HEIGHT = 20
 
 type LabelKey = "min" | "q1" | "median" | "q3" | "max"
 
-export function BoxPlot({ data, title }: Props) {
+export function BoxPlot({
+  data,
+  title,
+  includeOutliers = false,
+  onIncludeOutliersChange,
+}: Props) {
   const [width, setWidth] = useState(0)
   const [labelWidths, setLabelWidths] = useState<Record<LabelKey, number>>({
     min: 0,
@@ -28,6 +38,18 @@ export function BoxPlot({ data, title }: Props) {
     max: 0,
   })
 
+  // 0 = excluded, 1 = included
+  const anim = useRef(new Animated.Value(includeOutliers ? 1 : 0)).current
+
+  useEffect(() => {
+    Animated.spring(anim, {
+      toValue: includeOutliers ? 1 : 0,
+      bounciness: 6,
+      speed: 12,
+      useNativeDriver: false,
+    }).start()
+  }, [includeOutliers, anim])
+
   if (!data) {
     return (
       <Visual title={title}>
@@ -36,30 +58,85 @@ export function BoxPlot({ data, title }: Props) {
     )
   }
 
-  function position(pos: number): number {
-    return width * ((pos - data.min) / (data.max - data.min))
-  }
+  // Range 0: Exclude outliers
+  const min0 = data.min
+  const max0 = data.max
+  const range0 = max0 - min0 || 1
 
-  const xMin = position(data.min)
-  const xQ1 = position(data.q1)
-  const xMedian = position(data.median)
-  const xQ3 = position(data.q3)
-  const xMax = position(data.max)
+  // Range 1: Include outliers
+  const min1 =
+    data.outliersMin && data.outliersMin.length > 0
+      ? Math.min(...data.outliersMin, data.min)
+      : data.min
+  const max1 =
+    data.outliersMax && data.outliersMax.length > 0
+      ? Math.max(...data.outliersMax, data.max)
+      : data.max
+  const range1 = max1 - min1 || 1
 
-  const labels: { key: LabelKey; value: number; anchor: number }[] = [
-    { key: "min", value: data.min, anchor: xMin },
-    { key: "q1", value: data.q1, anchor: xQ1 },
-    { key: "median", value: data.median, anchor: xMedian },
-    { key: "q3", value: data.q3, anchor: xQ3 },
-    { key: "max", value: data.max, anchor: xMax },
+  // Positions for Mode 0 (Exclude)
+  const xQ1_0 = width * ((data.q1 - min0) / range0)
+  const xMedian_0 = width * ((data.median - min0) / range0)
+  const xQ3_0 = width * ((data.q3 - min0) / range0)
+
+  // Positions for Mode 1 (Include)
+  const xQ1_1 = width * ((data.q1 - min1) / range1)
+  const xMedian_1 = width * ((data.median - min1) / range1)
+  const xQ3_1 = width * ((data.q3 - min1) / range1)
+
+  // Animated positions
+  const xMin = 0
+  const xQ1 = anim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [xQ1_0, xQ1_1],
+  })
+  const xMedian = anim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [xMedian_0, xMedian_1],
+  })
+  const xQ3 = anim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [xQ3_0, xQ3_1],
+  })
+  const xMax = width
+
+  // Width calculations using Animated.subtract
+  const leftLineWidth = xQ1
+  const rightLineWidth = Animated.subtract(xMax, xQ3)
+  const boxLeftWidth = Animated.subtract(xMedian, xQ1)
+  const boxRightWidth = Animated.subtract(xQ3, xMedian)
+
+  // Labels positioning
+  const currentWidths = [
+    labelWidths.min,
+    labelWidths.q1,
+    labelWidths.median,
+    labelWidths.q3,
+    labelWidths.max,
   ]
 
-  const labelLefts = resolveLabelPositions(
-    labels.map((l) => l.anchor),
-    labels.map((l) => labelWidths[l.key]),
+  const labelLefts0 = resolveLabelPositions(
+    [0, xQ1_0, xMedian_0, xQ3_0, width],
+    currentWidths,
     LABEL_GAP,
     width,
   )
+
+  const labelLefts1 = resolveLabelPositions(
+    [0, xQ1_1, xMedian_1, xQ3_1, width],
+    currentWidths,
+    LABEL_GAP,
+    width,
+  )
+
+  const labelKeys: LabelKey[] = ["min", "q1", "median", "q3", "max"]
+  const labelValues = [
+    includeOutliers ? min1 : min0,
+    data.q1,
+    data.median,
+    data.q3,
+    includeOutliers ? max1 : max0,
+  ]
 
   function handleLabelLayout(key: LabelKey, e: LayoutChangeEvent) {
     const measuredWidth = e.nativeEvent.layout.width
@@ -79,20 +156,24 @@ export function BoxPlot({ data, title }: Props) {
             height: CHART_HEIGHT,
           }}>
           {/* Left whisker to box */}
-          <View style={[{ left: xMin, width: xQ1 - xMin }, styles.line]} />
+          <Animated.View
+            style={[{ left: xMin, width: leftLineWidth }, styles.line]}
+          />
 
           {/* Box to right whisker */}
-          <View style={[{ left: xQ3, width: xMax - xQ3 }, styles.line]} />
+          <Animated.View
+            style={[{ left: xQ3, width: rightLineWidth }, styles.line]}
+          />
 
           {/* Left whisker */}
           <View style={[{ left: xMin - LINE_WIDTH / 2 }, styles.whisker]} />
 
           {/* Q1 - median */}
-          <View
+          <Animated.View
             style={[
               {
                 left: xQ1,
-                width: xMedian - xQ1,
+                width: boxLeftWidth,
                 borderTopLeftRadius: 10,
                 borderBottomLeftRadius: 10,
               },
@@ -101,11 +182,11 @@ export function BoxPlot({ data, title }: Props) {
           />
 
           {/* Median - Q3 */}
-          <View
+          <Animated.View
             style={[
               {
                 left: xMedian,
-                width: xQ3 - xMedian,
+                width: boxRightWidth,
                 borderTopRightRadius: 10,
                 borderBottomRightRadius: 10,
                 borderLeftWidth: 0,
@@ -119,35 +200,45 @@ export function BoxPlot({ data, title }: Props) {
         </View>
 
         <View style={{ height: LABEL_ROW_HEIGHT }}>
-          {labels.map((label, i) => {
-            const measured = labelWidths[label.key]
+          {labelKeys.map((key, i) => {
+            const measured = labelWidths[key]
+            const animatedLeft = anim.interpolate({
+              inputRange: [0, 1],
+              outputRange: [labelLefts0[i], labelLefts1[i]],
+            })
+
             return (
-              <Text
-                key={label.key}
-                onLayout={(e) => handleLabelLayout(label.key, e)}
+              <AnimatedText
+                key={key}
+                onLayout={(e) => handleLabelLayout(key, e)}
                 style={[
                   styles.text,
                   {
-                    left: measured ? labelLefts[i] : label.anchor,
+                    left: animatedLeft,
                     opacity: measured ? 1 : 0,
                   },
                 ]}>
-                {Math.round(label.value)}m
-              </Text>
+                {Math.round(labelValues[i])}m
+              </AnimatedText>
             )
           })}
         </View>
+
+        {onIncludeOutliersChange && (
+          <Slider<boolean>
+            options={[
+              { label: "No Outliers", value: false },
+              { label: "Outliers", value: true },
+            ]}
+            value={includeOutliers}
+            onChange={onIncludeOutliersChange}
+          />
+        )}
       </View>
     </Visual>
   )
 }
 
-/**
- * Centers each label on its anchor point, then resolves overlaps by:
- * 1. Pushing labels right (in order) so each stays at least `gap` from the previous one.
- * 2. Pulling back from the right edge (in reverse) so nothing overflows the container.
- * Assumes anchors are already in ascending order (min <= q1 <= median <= q3 <= max).
- */
 function resolveLabelPositions(
   anchors: number[],
   widths: number[],

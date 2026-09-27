@@ -1,6 +1,6 @@
 import { useDatabase } from "@/hooks/useDatabase"
 import { IGetBagHeightBoxPlot } from "@/services/db/types"
-import { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { BoxPlot } from "../utils/BoxPlot"
 
 export function FellHeightBoxPlot() {
@@ -8,6 +8,7 @@ export function FellHeightBoxPlot() {
   const [boxPlotData, setBoxPlotData] = useState<IGetBagHeightBoxPlot | null>(
     null,
   )
+  const [includeOutliers, setIncludeOutliers] = useState(false)
 
   useEffect(() => {
     if (!database) return
@@ -20,20 +21,29 @@ export function FellHeightBoxPlot() {
   return (
     <BoxPlot
       data={boxPlotData}
-      title={`Bag Heights${getMaxMinText(boxPlotData)}`}
+      title={`Bag Heights${getMaxMinText(boxPlotData, includeOutliers)}`}
+      includeOutliers={includeOutliers}
+      onIncludeOutliersChange={setIncludeOutliers}
     />
   )
 }
 
-function getMaxMinText(boxPlotData: IGetBagHeightBoxPlot | null): string {
+function getMaxMinText(
+  boxPlotData: IGetBagHeightBoxPlot | null,
+  includeOutliers: boolean,
+): string {
   if (!boxPlotData) return ""
   let max = boxPlotData.max
   let min = boxPlotData.min
-  if (boxPlotData.outliersMax.length > 0) {
-    max = boxPlotData.outliersMax.sort()[boxPlotData.outliersMax.length - 1]
+
+  if (includeOutliers) {
+    if (boxPlotData.outliersMax && boxPlotData.outliersMax.length > 0) {
+      max = Math.max(...boxPlotData.outliersMax, boxPlotData.max)
+    }
+    if (boxPlotData.outliersMin && boxPlotData.outliersMin.length > 0) {
+      min = Math.min(...boxPlotData.outliersMin, boxPlotData.min)
+    }
   }
-  if (boxPlotData.outliersMin.length > 0) {
-    min = boxPlotData.outliersMin.sort()[0]
-  }
+
   return ` (range: ${min}m - ${max}m)`
 }
