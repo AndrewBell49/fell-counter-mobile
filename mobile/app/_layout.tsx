@@ -8,7 +8,7 @@ import {
   Roboto_700Bold,
   useFonts,
 } from "@expo-google-fonts/roboto"
-import { Slot } from "expo-router"
+import { Stack } from "expo-router"
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -17,15 +17,16 @@ export default function RootLayout() {
     Roboto_700Bold,
   })
 
-  if (!fontsLoaded) {
-    return <Loading />
-  }
+  if (!fontsLoaded) return <Loading />
 
   return (
     <SafeScreen>
       <UserProvider>
         <DatabaseProvider>
-          <Slot />
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name='(auth)' />
+            <Stack.Screen name='(app)' />
+          </Stack>
         </DatabaseProvider>
       </UserProvider>
     </SafeScreen>

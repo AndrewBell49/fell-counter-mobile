@@ -7,10 +7,12 @@ import type {
 } from "./sqlite/schema"
 import type {
   IGetActivityDistanceInDateOrder,
+  IGetActivityInfo,
   IGetBagCount,
   IGetBagHeightBoxPlot,
   IGetBagsInDateOrder,
   IGetCountryBag,
+  IGetFellInfo,
   IGetFellLocations,
   IGetMaxMinBagDate,
   IGetSportCount,
@@ -55,4 +57,8 @@ export interface DatabaseAdapter {
     classificationId: number,
   ): Promise<IGetFellLocations[]>
   getAllClassifications(): Promise<Classification[]>
+
+  // Fell & Activity Info
+  getFellInfo(fellId: number): Promise<IGetFellInfo | undefined>
+  getActivityInfo(activityId: number): Promise<IGetActivityInfo | undefined>
 }

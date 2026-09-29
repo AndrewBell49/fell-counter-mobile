@@ -1,3 +1,4 @@
+import { COLOURS } from "@/constants/colours"
 import React from "react"
 import { StyleSheet, TouchableOpacity } from "react-native"
 import Svg, { Circle, Path } from "react-native-svg"
@@ -43,14 +44,14 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 24,
     right: 16,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: COLOURS.background,
     width: 48,
     height: 48,
     borderRadius: 24,
     alignItems: "center",
     justifyContent: "center",
     elevation: 6,
-    shadowColor: "#000000",
+    shadowColor: COLOURS.shadow,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.2,
     shadowRadius: 4,

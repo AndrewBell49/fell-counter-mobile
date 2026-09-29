@@ -49,3 +49,44 @@ export interface IGetActivityDistanceInDateOrder extends Record<
   kms: number
   month: string
 }
+
+export interface IBagInfo {
+  date: string | number
+  activityName: string
+  activityId: number
+  sport: string
+}
+
+export interface IClassificationInfo {
+  name: string
+  description: string
+}
+
+export interface IGetFellInfo {
+  name: string
+  elevation: number
+  latitude: number
+  longitude: number
+  bags: IBagInfo[]
+  classifications: IClassificationInfo[]
+}
+
+export interface IActivityBaggedFell {
+  bagId: number
+  fellId: number
+  fellName: string
+  elevation: number
+  bagOccurrence: number
+}
+
+export interface IGetActivityInfo {
+  id: number
+  title: string
+  sport: string
+  distance: number
+  movingTime: number
+  elapsedTime: number
+  elevationGain: number
+  startDate: number
+  baggedFells: IActivityBaggedFell[]
+}

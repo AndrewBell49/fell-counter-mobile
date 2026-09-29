@@ -1,3 +1,4 @@
+import { COLOURS } from "@/constants/colours"
 import React, { useEffect, useRef } from "react"
 import { Animated, StyleSheet, View } from "react-native"
 import Svg, { Circle } from "react-native-svg"
@@ -49,7 +50,7 @@ export const ClusterMarker = React.memo(
             cx={size / 2}
             cy={size / 2}
             r={radius}
-            stroke='#000000'
+            stroke={COLOURS.shadow}
             strokeWidth={strokeWidth}
             fill='none'
           />
@@ -59,7 +60,7 @@ export const ClusterMarker = React.memo(
               cx={size / 2}
               cy={size / 2}
               r={radius}
-              stroke='#FFFFFF'
+              stroke={COLOURS.background}
               strokeWidth={strokeWidth}
               fill='none'
               strokeDasharray={`${circumference} ${circumference}`}
@@ -91,7 +92,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     elevation: 6,
-    shadowColor: "#000000",
+    shadowColor: COLOURS.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3,
@@ -102,7 +103,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   clusterTextMain: {
-    color: "#FFFFFF",
+    color: COLOURS.background,
     fontWeight: "900",
   },
 })

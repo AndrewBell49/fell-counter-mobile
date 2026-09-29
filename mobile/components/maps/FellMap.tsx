@@ -1,8 +1,14 @@
 import { IGetFellLocations } from "@/services/db/types"
 import * as Location from "expo-location"
+import { useFocusEffect, useRouter } from "expo-router"
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { StyleSheet, View } from "react-native"
-import MapView, { Marker, PROVIDER_GOOGLE, Region } from "react-native-maps"
+import MapView, {
+  MapMarker,
+  Marker,
+  PROVIDER_GOOGLE,
+  Region,
+} from "react-native-maps"
 import Supercluster from "supercluster"
 import { ClusterMarker } from "./ClusterMarker"
 import { FellCallout } from "./FellCallout"
@@ -54,9 +60,29 @@ function getZoomLevel(longitudeDelta: number): number {
 }
 
 export function FellMap({ data }: FellMapProps) {
+  const router = useRouter()
   const mapRef = useRef<MapView>(null)
   const [isMapReady, setIsMapReady] = useState(false)
   const [isLocating, setIsLocating] = useState(false)
+
+  // Track marker instances and currently open fell ID
+  const markerRefs = useRef<Record<string | number, MapMarker | null>>({})
+  const [selectedFellId, setSelectedFellId] = useState<string | number | null>(
+    null,
+  )
+
+  // Re-open callout when navigating back to map screen
+  useFocusEffect(
+    useCallback(() => {
+      if (selectedFellId && markerRefs.current[selectedFellId]) {
+        const timer = setTimeout(() => {
+          markerRefs.current[selectedFellId]?.showCallout()
+        }, 150)
+
+        return () => clearTimeout(timer)
+      }
+    }, [selectedFellId]),
+  )
 
   const initialRegion: Region = useMemo(() => {
     if (data && data.length > 0) {
@@ -275,9 +301,21 @@ export function FellMap({ data }: FellMapProps) {
           return (
             <Marker
               key={`fell-${fell.id}`}
+              ref={(ref) => {
+                markerRefs.current[fell.id] = ref
+              }}
               coordinate={{ latitude, longitude }}
               pinColor={isClimbed ? "green" : "red"}
-              tracksViewChanges={tracksViewChanges}>
+              tracksViewChanges={tracksViewChanges}
+              onPress={() => setSelectedFellId(fell.id)}
+              onDeselect={() => setSelectedFellId(null)}
+              onCalloutPress={() => {
+                setSelectedFellId(fell.id)
+                router.push({
+                  pathname: "/fells/[id]",
+                  params: { id: String(fell.id) },
+                })
+              }}>
               <FellCallout fell={fell} />
             </Marker>
           )

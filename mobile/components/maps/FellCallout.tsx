@@ -1,3 +1,5 @@
+import { COLOURS } from "@/constants/colours"
+import { M_TO_FT } from "@/constants/constants"
 import { IGetFellLocations } from "@/services/db/types"
 import React from "react"
 import { StyleSheet, View } from "react-native"
@@ -35,7 +37,7 @@ interface FellCalloutProps {
 export function FellCallout({ fell }: FellCalloutProps) {
   const isClimbed = Boolean(fell.bagDates && fell.bagDates.length > 0)
   const meters = fell.elevation || 0
-  const feet = Math.round(meters * 3.28084)
+  const feet = Math.round(meters * M_TO_FT)
 
   return (
     <Callout tooltip style={styles.customCallout}>
@@ -69,6 +71,7 @@ export function FellCallout({ fell }: FellCalloutProps) {
             {getBaggedDatesSubtext(fell.bagDates)}
           </Text>
         )}
+        <Text style={styles.tapHint}>Tap for details</Text>
       </View>
 
       <View style={styles.calloutArrow} />
@@ -83,13 +86,13 @@ const styles = StyleSheet.create({
   },
   cardContainer: {
     width: 210,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: COLOURS.background,
     borderRadius: 14,
     paddingVertical: 10,
     paddingHorizontal: 12,
     alignItems: "center",
     elevation: 8,
-    shadowColor: "#0F172A",
+    shadowColor: COLOURS.shadow,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.18,
     shadowRadius: 8,
@@ -97,12 +100,12 @@ const styles = StyleSheet.create({
   calloutTitle: {
     fontSize: 15,
     fontWeight: "700",
-    color: "#0F172A",
+    color: COLOURS.text,
     textAlign: "center",
     marginBottom: 5,
   },
   elevationBadge: {
-    backgroundColor: "#F1F5F9",
+    backgroundColor: COLOURS.card,
     borderRadius: 6,
     paddingHorizontal: 8,
     paddingVertical: 3,
@@ -111,7 +114,7 @@ const styles = StyleSheet.create({
   elevationText: {
     fontSize: 11,
     fontWeight: "600",
-    color: "#475569",
+    color: COLOURS.text,
     textAlign: "center",
   },
   statusBadge: {
@@ -143,7 +146,7 @@ const styles = StyleSheet.create({
   },
   dateSubtext: {
     fontSize: 10,
-    color: "#64748B",
+    color: COLOURS.text,
     marginTop: 2,
     textAlign: "center",
   },
@@ -157,7 +160,14 @@ const styles = StyleSheet.create({
     borderTopWidth: 7,
     borderLeftColor: "transparent",
     borderRightColor: "transparent",
-    borderTopColor: "#FFFFFF",
+    borderTopColor: COLOURS.background,
     alignSelf: "center",
+  },
+  tapHint: {
+    fontSize: 10,
+    fontWeight: "600",
+    color: "#2563EB",
+    marginTop: 6,
+    textAlign: "center",
   },
 })

@@ -20,18 +20,22 @@ import type {
 } from "./sqlite/schema"
 import { getSportCounts } from "./sqlite/visuals/getActivityCounts"
 import { getActivityDistanceInDateOrder } from "./sqlite/visuals/getActivityDistanceInDateOrder"
+import { getActivityInfo } from "./sqlite/visuals/getActivityInfo"
 import { getAllClassifications } from "./sqlite/visuals/getAllClassifications"
 import { getBagCount } from "./sqlite/visuals/getBagCount"
 import { getBagHeightBoxPlot } from "./sqlite/visuals/getBagHeightBoxPlot"
 import { getBagLocationsByClassification } from "./sqlite/visuals/getBagLocationsByClassification"
 import { getBagsByCountry } from "./sqlite/visuals/getBagsByCountry"
 import { getBagsInDateOrder } from "./sqlite/visuals/getBagsInDateOrder"
+import { getFellInfo } from "./sqlite/visuals/getFellInfo"
 import type {
   IGetActivityDistanceInDateOrder,
+  IGetActivityInfo,
   IGetBagCount,
   IGetBagHeightBoxPlot,
   IGetBagsInDateOrder,
   IGetCountryBag,
+  IGetFellInfo,
   IGetFellLocations,
   IGetMaxMinBagDate,
   IGetSportCount,
@@ -113,5 +117,13 @@ export class SQLiteAdapter implements DatabaseAdapter {
   }
   getAllClassifications(): Promise<Classification[]> {
     return getAllClassifications(this.db)
+  }
+
+  // Fell & Activity Info
+  getFellInfo(fellId: number): Promise<IGetFellInfo | undefined> {
+    return getFellInfo(fellId, this.db)
+  }
+  getActivityInfo(activityId: number): Promise<IGetActivityInfo | undefined> {
+    return getActivityInfo(activityId, this.db)
   }
 }

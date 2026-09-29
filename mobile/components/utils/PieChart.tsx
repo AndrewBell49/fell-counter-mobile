@@ -11,6 +11,7 @@ interface PieChartProps {
   data: { label: string; count: number }[] | null
   centerLabel: string
   centerLabelSub?: string
+  centerIcon?: React.ReactNode
   selectedIndex: number | null
   setSelectedIndex: React.Dispatch<React.SetStateAction<number | null>>
 }
@@ -22,6 +23,7 @@ export function PieChart({
   title,
   centerLabel,
   centerLabelSub,
+  centerIcon,
   data,
   selectedIndex,
   setSelectedIndex,
@@ -51,36 +53,27 @@ export function PieChart({
             labelKey='label'
             theme={{ background: COLOURS.background }}
             colors={[
-              "#2563EB", // blue
-              "#DC2626", // red
-              "#059669", // green
-              "#D97706", // amber
-              "#7C3AED", // violet
-              "#DB2777", // pink
-              "#0891B2", // cyan
-              "#65A30D", // lime
-              "#EA580C", // orange
+              "#2563EB",
+              "#DC2626",
+              "#059669",
+              "#D97706",
+              "#7C3AED",
+              "#DB2777",
+              "#0891B2",
+              "#65A30D",
+              "#EA580C",
             ]}
-            centerLabel={({ theme }) => (
-              <View style={{ alignItems: "center" }}>
-                <Text
-                  style={{
-                    fontSize: 20,
-                    fontWeight: "800",
-                  }}>
+            centerLabel={() => (
+              <View style={{ alignItems: "center", justifyContent: "center" }}>
+                {centerIcon}
+                <Text style={{ fontSize: 20, fontWeight: "800" }}>
                   {centerLabel}
                 </Text>
                 {centerLabelSub ? (
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      fontWeight: "700",
-                    }}>
+                  <Text style={{ fontSize: 14, fontWeight: "700" }}>
                     {centerLabelSub}
                   </Text>
-                ) : (
-                  <></>
-                )}
+                ) : null}
               </View>
             )}
             formatPercentage={(percentage) =>
@@ -91,7 +84,7 @@ export function PieChart({
             legend={{
               itemGap: 8,
               reservedHeight: legendReservedHeight,
-              renderItem: ({ item, theme, index }) => {
+              renderItem: ({ item, index }) => {
                 const isSelected = index === selectedIndex
                 return (
                   <View
