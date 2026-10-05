@@ -10,6 +10,7 @@ import { getFellData } from "./routes/fellData"
 import { getFellClassificationData } from "./routes/fellClassificationData"
 import { getClassificationData } from "./routes/classificationData"
 import { activeJobs } from "../lib/jobs/activeJobs"
+import { handleUpdateBags } from "./routes/bagFells"
 
 const router = Router()
 
@@ -44,6 +45,7 @@ router.post("/update-activities", (req, res) => {
 
   updateActivities(res.locals.user)
 })
+router.post("/update-bags", handleUpdateBags)
 router.get("/update-activities/status", (req, res) => {
   const job = activeJobs.get(res.locals.user.session_id)
   res.json({ status: job?.status ?? "idle" })

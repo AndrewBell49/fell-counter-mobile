@@ -9,6 +9,8 @@ import { User } from "../../../db/schema/users"
 import { getAccessTokenFromUser } from "../../identity/tokens"
 import { getMaxMinLatLon } from "../../../lib/geo/latLon"
 import { haversineDistance } from "../../../lib/geo/distance"
+import { getActiveBagsForActivity } from "../../../db/operations/bags/selectBag"
+import { deactivateBags } from "../../../db/operations/bags/updateBag"
 
 const CHECK_N_POINTS = 5
 const CHECK_N_SECONDS = 5
@@ -108,6 +110,7 @@ export async function saveBagsFromActivity(
           fell_id: pointFell.id,
           user_id: user.id,
           activity_id: activityId,
+          bag_sequence: 1,
           bag_date: bagDate,
         })
       } else if (state.hasExited) {
@@ -119,6 +122,7 @@ export async function saveBagsFromActivity(
           fell_id: pointFell.id,
           user_id: user.id,
           activity_id: activityId,
+          bag_sequence: state.bagCount,
           bag_date: bagDate,
         })
       }
@@ -141,6 +145,21 @@ export async function saveBagsFromActivity(
       }
     }),
   )
+
+  const currentKeys = new Set(
+    bags.map((bag) => `${bag.fell_id}:${bag.bag_sequence}`),
+  )
+  const existingActiveBags = await getActiveBagsForActivity(activityId)
+  const staleBagIds = existingActiveBags
+    .filter((b) => !currentKeys.has(`${b.fell_id}:${b.bag_sequence}`))
+    .map((b) => b.id)
+
+  if (staleBagIds.length > 0) {
+    await deactivateBags(user.id, staleBagIds)
+    console.log(
+      `Deactivated ${staleBagIds.length} stale bag(s) for activity ${activityId}`,
+    )
+  }
 
   await updateActivity(activityId, { checked_date: new Date() })
   return fellIds

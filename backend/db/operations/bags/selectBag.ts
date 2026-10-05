@@ -54,3 +54,10 @@ export async function getAllInactiveBags(
     .limit(ROW_RETURN_LIMIT)
     .offset((page ?? 0) * ROW_RETURN_LIMIT)
 }
+
+export async function getActiveBagsForActivity(activityId: number) {
+  return await db
+    .select()
+    .from(activeBags)
+    .where(eq(activeBags.activity_id, activityId))
+}

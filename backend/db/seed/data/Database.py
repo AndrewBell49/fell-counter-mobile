@@ -1,5 +1,6 @@
 import sqlite3
 import math
+from collections import defaultdict
 
 RADIUS_EARTH = 6378000
 
@@ -13,14 +14,15 @@ class Database:
         return self
     
     def __exit__(self, exc_type, exc_value, traceback):
-        self.con.close() # so the connection is only open while one instance is open
+        if exc_type is None:
+            self.con.commit()  # Commits all batch writes at the end in one single disk operation
+        self.con.close()
     
     def AddFellToDB(self, fellID, name, elevation, latitude, longitude, country):
         self.cur.execute("""INSERT INTO fells 
                             (id, name, elevation, latitude, longitude, country) 
                             VALUES (?, ?, ?, ?, ?, ?)""",
                             (fellID, name, elevation, latitude, longitude, country))
-        self.con.commit()
 
     def FellAlreadyInDB(self, name, elevation, latitude, longitude):
         fells = self.cur.execute("""SELECT * 
@@ -67,15 +69,65 @@ class Database:
         return lastFellID[0]
     
     def GetClassificationIDFromName(self, name):
-        classification =  self.cur.execute("""SELECT id 
+        classification = self.cur.execute("""SELECT id 
                                               FROM classifications
                                               WHERE name = ?""",
                                               (name,)).fetchone()
+        if classification is None:
+            return None
         return classification[0]
 
     def AddNewFellClassification(self, fellID, classificationID):
-        self.cur.execute("""INSERT INTO fell_classifications 
-                            (fell_id, classification_id) 
-                            VALUES (?, ?)""", 
-                            (fellID, classificationID))
-        self.con.commit()
+        exists = self.cur.execute("""
+            SELECT 1 FROM fell_classifications 
+            WHERE fell_id = ? AND classification_id = ?
+        """, (fellID, classificationID)).fetchone()
+
+        if not exists:
+            self.cur.execute("""
+                INSERT INTO fell_classifications (fell_id, classification_id) 
+                VALUES (?, ?)
+            """, (fellID, classificationID))
+
+    def GetOrCreateClassification(self, name, description=""):
+        class_id = self.GetClassificationIDFromName(name)
+        if class_id is not None:
+            return class_id
+
+        self.cur.execute(
+            "INSERT INTO classifications (name, description) VALUES (?, ?)",
+            (name, description)
+        )
+        return self.cur.lastrowid
+
+    def GetFellIDByNameAndLocation(self, name, latitude, longitude):
+        row = self.cur.execute("""
+            SELECT id FROM fells 
+            WHERE LOWER(name) = LOWER(?) 
+              AND ABS(latitude - ?) < 0.0001 
+              AND ABS(longitude - ?) < 0.0001
+        """, (name, latitude, longitude)).fetchone()
+        return row[0] if row else None
+
+    def GetAllFellsByName(self):
+        """Loads all fells into an in-memory dictionary grouped by lowercase name."""
+        fells_by_name = defaultdict(list)
+        rows = self.cur.execute("SELECT id, name, latitude, longitude FROM fells").fetchall()
+        for fell_id, name, lat, lon in rows:
+            if name and lat is not None and lon is not None:
+                fells_by_name[name.strip().lower()].append((fell_id, float(lat), float(lon)))
+        return fells_by_name
+
+    def GetExistingFellClassifications(self):
+        """Pre-loads all existing fell-classification links into a set."""
+        rows = self.cur.execute("SELECT fell_id, classification_id FROM fell_classifications").fetchall()
+        return set(rows)
+
+    def AddFellClassificationsBatch(self, links):
+        """Inserts a list of (fell_id, classification_id) tuples in a single batch query."""
+        if not links:
+            return
+        self.cur.executemany("""
+            INSERT INTO fell_classifications (fell_id, classification_id) 
+            VALUES (?, ?)
+        """, links)
