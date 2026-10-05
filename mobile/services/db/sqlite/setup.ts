@@ -44,6 +44,13 @@ export async function setupDatabase(): Promise<SQLite.SQLiteDatabase> {
       activity_id INTEGER NOT NULL REFERENCES activities(id),
       bag_date INTEGER NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS pending_sync (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      action TEXT NOT NULL,
+      payload TEXT NOT NULL,
+      created_at INTEGER NOT NULL
+    );
     `)
 
   return db

@@ -5,6 +5,7 @@ import { Loading } from "@/components/utils/Loading"
 import { Text } from "@/components/utils/Text"
 import { Visual } from "@/components/utils/Visual"
 import { COLOURS } from "@/constants/colours"
+import { useApi } from "@/hooks/useApi"
 import { useDatabase } from "@/hooks/useDatabase"
 import { IGetActivityInfo } from "@/services/db/types"
 import { Stack, useLocalSearchParams } from "expo-router"
@@ -14,6 +15,7 @@ import { ScrollView, StyleSheet, View } from "react-native"
 export default function ActivityDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const activityId = Number(id)
+  const { request } = useApi()
 
   const database = useDatabase()
   const [activityInfo, setActivityInfo] = useState<
@@ -32,7 +34,7 @@ export default function ActivityDetailsScreen() {
     if (!database || !activityInfo) return
 
     // Execute database deletion
-    await database.removeBag(bagId)
+    await database.removeBag(bagId, request)
 
     // Update state locally
     setActivityInfo({

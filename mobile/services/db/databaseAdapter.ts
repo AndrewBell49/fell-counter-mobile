@@ -1,9 +1,12 @@
+import { RequestFn } from "@/hooks/useApi"
+import { NewPendingSync } from "./sqlite/pendingSync/insertPendingSync"
 import type {
   Activity,
   Bag,
   Classification,
   Fell,
   FellClassification,
+  PendingSync,
 } from "./sqlite/schema"
 import type {
   IGetActivityDistanceInDateOrder,
@@ -58,7 +61,15 @@ export interface DatabaseAdapter {
   ): Promise<IGetFellLocations[]>
   getAllClassifications(): Promise<Classification[]>
 
+  // Pending Sync
+  insertPendingSync(
+    pendingSync: NewPendingSync[] | NewPendingSync,
+  ): Promise<void>
+  removePendingSyncByIds(ids: number[]): Promise<void>
+  selectPendingSync(): Promise<PendingSync[]>
+
   // Fell & Activity Info
   getFellInfo(fellId: number): Promise<IGetFellInfo | undefined>
   getActivityInfo(activityId: number): Promise<IGetActivityInfo | undefined>
+  removeBag(bagId: number, request: RequestFn): Promise<void>
 }

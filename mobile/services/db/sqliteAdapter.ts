@@ -1,4 +1,6 @@
+import { RequestFn } from "@/hooks/useApi"
 import { SQLiteDatabase } from "expo-sqlite"
+import { sendBagUpdates } from "../strava/updateBags"
 import { DatabaseAdapter } from "./databaseAdapter"
 import { insertActivities } from "./sqlite/activity/insertActivity"
 import { removeActivities } from "./sqlite/activity/removeActivity"
@@ -11,12 +13,19 @@ import { insertFellClassifications } from "./sqlite/fellClassification/insertFel
 import { removeFellClassifications } from "./sqlite/fellClassification/removeFellClassification"
 import { insertFells } from "./sqlite/fells/insertFell"
 import { removeFells } from "./sqlite/fells/removeFell"
+import {
+  insertPendingSync,
+  type NewPendingSync,
+} from "./sqlite/pendingSync/insertPendingSync"
+import { removePendingSyncByIds } from "./sqlite/pendingSync/removePendingSync"
+import { selectPendingSync } from "./sqlite/pendingSync/selectPendingSync"
 import type {
   Activity,
   Bag,
   Classification,
   Fell,
   FellClassification,
+  PendingSync,
 } from "./sqlite/schema"
 import { getSportCounts } from "./sqlite/visuals/getActivityCounts"
 import { getActivityDistanceInDateOrder } from "./sqlite/visuals/getActivityDistanceInDateOrder"
@@ -119,11 +128,37 @@ export class SQLiteAdapter implements DatabaseAdapter {
     return getAllClassifications(this.db)
   }
 
+  // Pending Sync
+  insertPendingSync(
+    pendingSync: NewPendingSync[] | NewPendingSync,
+  ): Promise<void> {
+    return insertPendingSync(this.db, pendingSync)
+  }
+  removePendingSyncByIds(ids: number[]): Promise<void> {
+    return removePendingSyncByIds(this.db, ids)
+  }
+  selectPendingSync(): Promise<PendingSync[]> {
+    return selectPendingSync(this.db)
+  }
+
   // Fell & Activity Info
   getFellInfo(fellId: number): Promise<IGetFellInfo | undefined> {
     return getFellInfo(fellId, this.db)
   }
   getActivityInfo(activityId: number): Promise<IGetActivityInfo | undefined> {
     return getActivityInfo(activityId, this.db)
+  }
+
+  async removeBag(bagId: number, request: RequestFn): Promise<void> {
+    await removeBags(this.db, [bagId])
+    const status = await sendBagUpdates([], [bagId], request)
+
+    if (status === "RETRY") {
+      await this.insertPendingSync({
+        action: "REMOVE_BAG",
+        payload: JSON.stringify({ bagId }),
+        created_at: Date.now(),
+      })
+    }
   }
 }

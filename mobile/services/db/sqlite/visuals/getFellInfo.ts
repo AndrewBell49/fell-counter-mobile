@@ -24,11 +24,12 @@ export async function getFellInfo(
       activity_id: number
       sport: string
     }>(
-      `SELECT b.bag_date, a.name AS activity_name, a.id AS activity_id, a.sport
-     FROM bags b
-     INNER JOIN activities a ON b.activity_id = a.id
-     WHERE b.fell_id = ?
-     ORDER BY b.bag_date DESC`,
+      `SELECT MAX(b.bag_date) AS bag_date, a.name AS activity_name, a.id AS activity_id, a.sport
+       FROM bags b
+       INNER JOIN activities a ON b.activity_id = a.id
+       WHERE b.fell_id = ?
+       GROUP BY a.id
+       ORDER BY bag_date DESC`,
       [fellId],
     ),
 

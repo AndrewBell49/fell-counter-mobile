@@ -59,7 +59,7 @@ export default function ActivityFellsList({
               ]}
               onPress={() =>
                 router.push({
-                  pathname: "/fell/[id]",
+                  pathname: "/fells/[id]",
                   params: { id: bag.fellId },
                 })
               }>

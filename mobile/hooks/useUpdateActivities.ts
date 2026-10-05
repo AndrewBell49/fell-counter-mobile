@@ -6,12 +6,11 @@ import {
   Fell,
   FellClassification,
 } from "@/services/db/sqlite/schema"
-import { ApiError } from "@/services/errors/apiError"
-import { getError } from "@/services/errors/errorMessage"
 import { getItem, saveItem } from "@/services/storage/storage"
 import { SERVER_URL } from "@/services/strava/constants"
+import { flushPendingSync } from "@/services/strava/flushPendingSync"
 import { getUpdateData } from "@/services/strava/updateData"
-import { useContext, useState } from "react"
+import { useCallback, useContext, useState } from "react"
 import { Platform } from "react-native"
 import { useApi } from "./useApi"
 
@@ -22,50 +21,71 @@ const POLL_INTERVAL_MS = 3000
 export function useUpdateActivities() {
   const [status, setStatus] = useState<Status>("idle")
   const [error, setError] = useState<null | string>(null)
+  const [isOffline, setIsOffline] = useState(false)
   const { request } = useApi()
   const { database, isReady } = useContext(DatabaseContext)
+
+  const handleOfflineFallback = useCallback(() => {
+    setIsOffline(true)
+    setStatus("ready")
+  }, [])
 
   async function pollStatus() {
     try {
       const res = await request<{ status: Status }>({
         url: `${SERVER_URL}/strava/update-activities/status`,
+        retries: 1,
       })
       setStatus(res.status)
 
       if (res.status === "running") {
-        setTimeout(pollStatus, POLL_INTERVAL_MS) // schedule next check
+        setTimeout(pollStatus, POLL_INTERVAL_MS)
       } else if (res.status === "failed") {
-        setError("Update failed, please try again")
+        setError("Update failed")
+        setStatus("failed")
       }
     } catch {
-      setStatus("failed")
-      setError("Lost connection to server")
+      handleOfflineFallback()
     }
   }
 
-  const trigger = async () => {
-    if (status == "running") return
+  const trigger = useCallback(async () => {
+    if (status === "running") return
     setStatus("running")
     setError(null)
+    setIsOffline(false)
 
+    // 1. Flush pending offline sync items first
+    if (database) {
+      try {
+        const syncStatus = await flushPendingSync(database, request)
+        if (syncStatus === "RETRY") {
+          // Server offline / network error — stop here and continue offline
+          handleOfflineFallback()
+          return
+        }
+      } catch (err) {
+        handleOfflineFallback()
+        return
+      }
+    }
+
+    // 2. Server is online and pending items are synced — proceed with activity update
     try {
       await request({
         url: `${SERVER_URL}/strava/update-activities`,
-        options: {
-          method: "POST",
-        },
+        options: { method: "POST" },
         allowedCodes: [409],
       })
 
       pollStatus()
-    } catch (err) {
-      setStatus("failed")
-      setError(getError(err).message)
+    } catch {
+      handleOfflineFallback()
     }
-  }
+  }, [status, database, request, handleOfflineFallback])
 
-  const updateDatabaseData = async () => {
-    if (status != "completed" || !database) return
+  const updateDatabaseData = useCallback(async () => {
+    if (status !== "completed" || !database) return
     setError(null)
 
     try {
@@ -100,15 +120,12 @@ export function useUpdateActivities() {
             ),
             getUpdateData<Bag>("bag", lastUpdated, currentDate, request),
           ])
-        console.log("Updated the state of activities")
-      } catch (err) {
-        console.error(err)
-        setError(err instanceof ApiError ? err.message : "Failed to fetch data")
-        return // don't write anything if fetching failed
+      } catch {
+        handleOfflineFallback()
+        return
       }
 
       try {
-        // Remove children first
         await database.removeBags(bags.removedItems.map((i) => i.id))
         await database.removeFellClassifications(
           fellClassifications.removedItems,
@@ -121,36 +138,35 @@ export function useUpdateActivities() {
         )
         await database.removeFells(fells.removedItems.map((i) => i.id))
 
-        // Insert parents first
         await database.insertFells(fells.items)
         await database.insertClassifications(classifications.items)
         await database.insertActivities(activities.items)
         await database.insertFellClassifications(fellClassifications.items)
         await database.insertBags(bags.items)
-
-        console.log("Updated database completely")
       } catch (err) {
-        console.error(err)
-        setError("Failed to save data — please try again")
-        return // don't save lastUpdated if writes failed
+        console.error("SQLite write failed:", err)
+        setError("Failed to save local data")
+        setStatus("failed")
+        return
       }
 
       await saveItem("lastUpdated", currentDate.getTime().toString())
       setStatus("ready")
-    } catch (error) {
-      setError("Unexpected error — please try again")
+    } catch {
+      handleOfflineFallback()
     }
-  }
+  }, [status, database, request, handleOfflineFallback])
 
   if (Platform.OS === "web") {
     return {
       trigger: () => {},
       updateDatabaseData: () => {},
-      status: "ready",
+      status: "ready" as Status,
       error: "",
+      isOffline: false,
       isReady: true,
     }
   }
 
-  return { trigger, updateDatabaseData, status, error, isReady }
+  return { trigger, updateDatabaseData, status, error, isOffline, isReady }
 }

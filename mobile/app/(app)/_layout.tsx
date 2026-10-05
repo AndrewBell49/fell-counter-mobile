@@ -15,7 +15,7 @@ export default function AppLayout() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name='(tabs)' />
         <Stack.Screen
-          name='fell/[id]'
+          name='fells/[id]'
           options={{
             headerShown: true,
             title: "Fell Details",

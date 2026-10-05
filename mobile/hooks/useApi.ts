@@ -15,14 +15,16 @@ export function useApi() {
     url,
     options,
     allowedCodes = [],
+    retries = RETRIES,
   }: {
     url: string
     options?: RequestInit
     allowedCodes?: number[]
+    retries?: number
   }): Promise<T> {
     let lastError: ApiError
 
-    for (let i = 1; i <= RETRIES; i++) {
+    for (let i = 1; i <= retries; i++) {
       try {
         const res = await fetch(url, {
           ...options,

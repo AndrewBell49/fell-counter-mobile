@@ -17,6 +17,7 @@ export interface FellClassification {
   fell_id: number
   classification_id: number
 }
+
 export interface Activity {
   id: number
   name: string
@@ -33,4 +34,11 @@ export interface Bag {
   fell_id: number
   activity_id: number
   bag_date: number
+}
+
+export interface PendingSync {
+  id: number
+  action: "ADD_BAG" | "REMOVE_BAG"
+  payload: string
+  created_at: number
 }

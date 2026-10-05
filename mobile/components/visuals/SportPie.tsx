@@ -7,11 +7,7 @@ export function SportPie() {
   const { selectedSportIdx, setSelectedSportIdx, allSports } =
     useContext(SportContext)
 
-  // Retrieve selected sport object from allSports array
-  const selectedSport =
-    selectedSportIdx !== null && selectedSportIdx >= 0
-      ? allSports?.[selectedSportIdx]
-      : null
+  const selectedSport = allSports[selectedSportIdx]
 
   return (
     <PieChart
@@ -22,19 +18,9 @@ export function SportPie() {
         })) || null
       }
       title='Activities per sport'
-      centerIcon={
-        selectedSport ? (
-          <SportIcon sport={selectedSport.sport} size={24} />
-        ) : null
-      }
-      centerLabel={
-        selectedSport
-          ? `${selectedSport.count}`
-          : `${allSports?.reduce((acc, curr) => acc + curr.count, 0) ?? 0}`
-      }
-      centerLabelSub={
-        selectedSport ? `${selectedSport.sport} activities` : "activities"
-      }
+      centerIcon={<SportIcon sport={selectedSport.sport} size={24} />}
+      centerLabel={`${selectedSport.count}`}
+      centerLabelSub={`${selectedSport.sport} activities`}
       selectedIndex={selectedSportIdx}
       setSelectedIndex={(value) =>
         setSelectedSportIdx((prev) => {
