@@ -1,39 +1,325 @@
-import ActivityPage from "@/components/ActivityPage"
 import { Loading } from "@/components/utils/Loading"
-import { Visual } from "@/components/utils/Visual"
-import { SportProvider } from "@/context/SportContext"
+import { Text } from "@/components/utils/Text"
+import { COLOURS } from "@/constants/colours"
 import { useDatabase } from "@/hooks/useDatabase"
-import { IGetSportCount } from "@/services/db/types"
-import { useEffect, useState } from "react"
+import { IActivityListItem, IGetActivitiesParams } from "@/services/db/types"
+import { Ionicons } from "@expo/vector-icons"
+import React, { useCallback, useEffect, useState } from "react"
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  RefreshControl,
+  StyleSheet,
+  View,
+} from "react-native"
+
+import { ActivityCard } from "@/components/activityTab/ActivityCard"
+import { FilterModal } from "@/components/activityTab/FilterModal"
+import {
+  DEFAULT_FILTERS,
+  FilterState,
+  SortField,
+  SortOrder,
+} from "@/components/activityTab/types"
+
+const PAGE_SIZE = 15
 
 export default function ActivitiesScreen() {
   const database = useDatabase()
-  const [allSports, setAllSports] = useState<IGetSportCount[] | null>(null)
+  const [activities, setActivities] = useState<IActivityListItem[]>([])
+  const [sportOptions, setSportOptions] = useState<string[]>(["All"])
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
+  const [initialLoading, setInitialLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [refreshing, setRefreshing] = useState(false)
+  const [filterModalVisible, setFilterModalVisible] = useState(false)
+
+  // Sort State
+  const [sortBy, setSortBy] = useState<SortField>("startDate")
+  const [sortOrder, setSortOrder] = useState<SortOrder>("DESC")
+
+  // Filter State
+  const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS)
+  const [appliedFilters, setAppliedFilters] =
+    useState<FilterState>(DEFAULT_FILTERS)
+
+  const getActiveFilterCount = () => {
+    let count = 0
+    const isSportFiltered =
+      appliedFilters.sports.length > 0 &&
+      !appliedFilters.sports.some((s) => s.toLowerCase() === "all")
+
+    if (isSportFiltered) count++
+    if (appliedFilters.minDistance || appliedFilters.maxDistance) count++
+    if (appliedFilters.minElevation || appliedFilters.maxElevation) count++
+    if (
+      appliedFilters.minHours ||
+      appliedFilters.minMins ||
+      appliedFilters.maxHours ||
+      appliedFilters.maxMins
+    )
+      count++
+    if (appliedFilters.minFells || appliedFilters.maxFells) count++
+    return count
+  }
+
+  const buildQueryParams = (pageToLoad: number): IGetActivitiesParams => {
+    const params: IGetActivitiesParams = {
+      page: pageToLoad,
+      limit: PAGE_SIZE,
+      sortBy,
+      sortOrder,
+    }
+
+    const selectedSports = appliedFilters.sports.filter(
+      (s) => s.toLowerCase() !== "all",
+    )
+
+    if (selectedSports.length > 0) {
+      // If your backend database query accepts array or comma-separated string:
+      params.sport =
+        selectedSports.length === 1
+          ? selectedSports[0]
+          : (selectedSports as any)
+    }
+
+    if (appliedFilters.minDistance)
+      params.minDistance = Number(appliedFilters.minDistance) * 1000
+    if (appliedFilters.maxDistance)
+      params.maxDistance = Number(appliedFilters.maxDistance) * 1000
+    if (appliedFilters.minElevation)
+      params.minElevation = Number(appliedFilters.minElevation)
+    if (appliedFilters.maxElevation)
+      params.maxElevation = Number(appliedFilters.maxElevation)
+
+    const minSecs =
+      Number(appliedFilters.minHours || 0) * 3600 +
+      Number(appliedFilters.minMins || 0) * 60
+    if (minSecs > 0) params.minTime = minSecs
+
+    const maxSecs =
+      Number(appliedFilters.maxHours || 0) * 3600 +
+      Number(appliedFilters.maxMins || 0) * 60
+    if (maxSecs > 0) params.maxTime = maxSecs
+
+    if (appliedFilters.minFells)
+      params.minFells = Number(appliedFilters.minFells)
+    if (appliedFilters.maxFells)
+      params.maxFells = Number(appliedFilters.maxFells)
+
+    return params
+  }
+
+  const loadActivities = useCallback(
+    async (pageToLoad: number, isRefresh = false) => {
+      if (!database) return
+
+      try {
+        if (isRefresh) {
+          setRefreshing(true)
+        } else if (pageToLoad > 1) {
+          setLoadingMore(true)
+        }
+
+        const queryParams = buildQueryParams(pageToLoad)
+        const data = await database.getActivities(queryParams)
+
+        if (isRefresh || pageToLoad === 1) {
+          setActivities(data)
+          setPage(1)
+        } else {
+          setActivities((prev) => [...prev, ...data])
+          setPage(pageToLoad)
+        }
+        setHasMore(data.length >= PAGE_SIZE)
+      } catch (error) {
+        console.error("Error fetching activities:", error)
+      } finally {
+        setInitialLoading(false)
+        setLoadingMore(false)
+        setRefreshing(false)
+      }
+    },
+    [database, sortBy, sortOrder, appliedFilters],
+  )
 
   useEffect(() => {
-    if (!database) return
+    if (database) {
+      loadActivities(1)
 
-    database.getSportCounts().then((sportData) => {
-      setAllSports(sportData)
-    })
-  }, [database])
+      database
+        .getSportCounts()
+        .then((sportData) => {
+          if (Array.isArray(sportData)) {
+            const fetchedSports = sportData
+              .map((item) => item.sport)
+              .filter(Boolean)
+            setSportOptions(["All", ...fetchedSports])
+          }
+        })
+        .catch((error) => console.error("Error fetching sports:", error))
+    }
+  }, [database, loadActivities])
 
-  if (!allSports) {
+  const handleApplyFilters = () => {
+    setAppliedFilters(filters)
+    setFilterModalVisible(false)
+  }
+
+  const handleResetFilters = () => {
+    setFilters(DEFAULT_FILTERS)
+    setAppliedFilters(DEFAULT_FILTERS)
+    setSortBy("startDate")
+    setSortOrder("DESC")
+    setFilterModalVisible(false)
+  }
+
+  const handleEndReached = () => {
+    if (!loadingMore && hasMore && !initialLoading && !refreshing) {
+      loadActivities(page + 1)
+    }
+  }
+
+  const handleRefresh = () => {
+    loadActivities(1, true)
+  }
+
+  const activeFilterCount = getActiveFilterCount()
+
+  if (initialLoading) {
     return (
-      <Visual title='Loading Activities'>
-        <Loading />
-      </Visual>
+      <View style={styles.container}>
+        <Text style={styles.text}>Activities</Text>
+        <View style={styles.centered}>
+          <Loading />
+        </View>
+      </View>
     )
   }
 
-  const maxIndex = allSports.reduce(
-    (maxIdx, item, idx, arr) => (item.count > arr[maxIdx].count ? idx : maxIdx),
-    0,
-  )
-
   return (
-    <SportProvider defaultSport={maxIndex} defaultAllSports={allSports}>
-      <ActivityPage />
-    </SportProvider>
+    <View style={styles.container}>
+      <View style={styles.headerRow}>
+        <Text style={styles.text}>Activities</Text>
+        <Pressable
+          style={styles.filterBtn}
+          onPress={() => setFilterModalVisible(true)}>
+          <Ionicons name='options-outline' size={18} color={COLOURS.primary} />
+          <Text style={styles.filterBtnText}>Filter & Sort</Text>
+          {activeFilterCount > 0 && (
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>{activeFilterCount}</Text>
+            </View>
+          )}
+        </Pressable>
+      </View>
+
+      <FlatList
+        data={activities}
+        keyExtractor={(item) => String(item.id)}
+        renderItem={({ item }) => <ActivityCard item={item} />}
+        contentContainerStyle={styles.listContent}
+        onEndReached={handleEndReached}
+        onEndReachedThreshold={0.4}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={COLOURS.primary}
+            colors={[COLOURS.primary]}
+          />
+        }
+        ListFooterComponent={
+          loadingMore ? (
+            <View style={styles.footerLoading}>
+              <ActivityIndicator size='small' color={COLOURS.primary} />
+            </View>
+          ) : null
+        }
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>No activities found</Text>
+        }
+      />
+
+      <FilterModal
+        visible={filterModalVisible}
+        onClose={() => setFilterModalVisible(false)}
+        filters={filters}
+        setFilters={setFilters}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
+        sortOrder={sortOrder}
+        setSortOrder={setSortOrder}
+        sportOptions={sportOptions}
+        onApply={handleApplyFilters}
+        onReset={handleResetFilters}
+      />
+    </View>
   )
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 10,
+    backgroundColor: COLOURS.background,
+  },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 10,
+  },
+  text: {
+    fontWeight: "bold",
+    fontSize: 28,
+  },
+  filterBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: COLOURS.card,
+    borderColor: COLOURS.border,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  filterBtnText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: COLOURS.primary,
+  },
+  badge: {
+    backgroundColor: COLOURS.primary,
+    borderRadius: 10,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  badgeText: {
+    color: "#fff",
+    fontSize: 11,
+    fontWeight: "bold",
+  },
+  centered: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  listContent: {
+    paddingBottom: 16,
+  },
+  footerLoading: {
+    paddingVertical: 16,
+    alignItems: "center",
+  },
+  emptyText: {
+    fontSize: 15,
+    color: COLOURS.textLight,
+    fontStyle: "italic",
+    textAlign: "center",
+    marginTop: 40,
+  },
+})

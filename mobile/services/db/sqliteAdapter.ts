@@ -27,6 +27,7 @@ import type {
   FellClassification,
   PendingSync,
 } from "./sqlite/schema"
+import { getActivities } from "./sqlite/visuals/getActivities"
 import { getSportCounts } from "./sqlite/visuals/getActivityCounts"
 import { getActivityDistanceInDateOrder } from "./sqlite/visuals/getActivityDistanceInDateOrder"
 import { getActivityInfo } from "./sqlite/visuals/getActivityInfo"
@@ -38,6 +39,8 @@ import { getBagsByCountry } from "./sqlite/visuals/getBagsByCountry"
 import { getBagsInDateOrder } from "./sqlite/visuals/getBagsInDateOrder"
 import { getFellInfo } from "./sqlite/visuals/getFellInfo"
 import type {
+  IActivityListItem,
+  IGetActivitiesParams,
   IGetActivityDistanceInDateOrder,
   IGetActivityInfo,
   IGetBagCount,
@@ -108,7 +111,7 @@ export class SQLiteAdapter implements DatabaseAdapter {
     return getBagsByCountry(this.db)
   }
 
-  // Activity Visuals
+  // Sport Visuals
   getSportCounts(): Promise<IGetSportCount[]> {
     return getSportCounts(this.db)
   }
@@ -142,6 +145,9 @@ export class SQLiteAdapter implements DatabaseAdapter {
   }
 
   // Fell & Activity Info
+  getActivities(params?: IGetActivitiesParams): Promise<IActivityListItem[]> {
+    return getActivities(this.db, params)
+  }
   getFellInfo(fellId: number): Promise<IGetFellInfo | undefined> {
     return getFellInfo(fellId, this.db)
   }

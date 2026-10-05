@@ -9,6 +9,8 @@ import type {
   PendingSync,
 } from "./sqlite/schema"
 import type {
+  IActivityListItem,
+  IGetActivitiesParams,
   IGetActivityDistanceInDateOrder,
   IGetActivityInfo,
   IGetBagCount,
@@ -49,7 +51,7 @@ export interface DatabaseAdapter {
   getBagsInDateOrder(): Promise<IGetBagsInDateOrder[]>
   getBagsByCountry(): Promise<IGetCountryBag[]>
 
-  // Activity Visuals
+  // Sport Visuals
   getSportCounts(): Promise<IGetSportCount[]>
   getActivityDistanceInDateOrder(
     sport: string,
@@ -69,6 +71,7 @@ export interface DatabaseAdapter {
   selectPendingSync(): Promise<PendingSync[]>
 
   // Fell & Activity Info
+  getActivities(params?: IGetActivitiesParams): Promise<IActivityListItem[]>
   getFellInfo(fellId: number): Promise<IGetFellInfo | undefined>
   getActivityInfo(activityId: number): Promise<IGetActivityInfo | undefined>
   removeBag(bagId: number, request: RequestFn): Promise<void>

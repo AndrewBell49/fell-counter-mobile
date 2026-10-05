@@ -1,10 +1,13 @@
-import { SQLiteDatabase } from "expo-sqlite"
 import { IGetActivityInfo } from "../../types"
+import { DB_TYPE } from "../constants"
+import { requireDb } from "../setup"
 
 export async function getActivityInfo(
   activityId: number,
-  db: SQLiteDatabase,
+  db: DB_TYPE,
 ): Promise<IGetActivityInfo | undefined> {
+  requireDb(db)
+
   const [activity, bagRows] = await Promise.all([
     // 1. Fetch activity metrics
     db.getFirstAsync<{

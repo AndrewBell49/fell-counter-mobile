@@ -5,7 +5,6 @@ import { SQLiteAdapter } from "./sqliteAdapter"
 import { WebAdapter } from "./webAdapter"
 
 export async function createDatabaseAdapter(): Promise<DatabaseAdapter> {
-  console.log(Platform.OS)
   if (Platform.OS === "web") {
     return new WebAdapter()
   }

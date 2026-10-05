@@ -90,3 +90,39 @@ export interface IGetActivityInfo {
   startDate: number
   baggedFells: IActivityBaggedFell[]
 }
+
+export interface IActivityListItem {
+  id: number
+  title: string
+  distance: number
+  elapsedTime: number
+  movingTime: number
+  elevationGain: number
+  sport: string
+  startDate: number
+  fellsCount: number
+}
+
+export interface IGetActivitiesParams {
+  page?: number
+  limit?: number
+  sortBy?:
+    | "startDate"
+    | "distance"
+    | "elevationGain"
+    | "movingTime"
+    | "sport"
+    | "fellsCount"
+  sortOrder?: "ASC" | "DESC"
+  sport?: string | string[]
+  minDate?: number
+  maxDate?: number
+  minDistance?: number
+  maxDistance?: number
+  minElevation?: number
+  maxElevation?: number
+  minTime?: number
+  maxTime?: number
+  minFells?: number
+  maxFells?: number
+}

@@ -67,12 +67,25 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
+          name='sports'
+          options={{
+            title: "Sports",
+            tabBarIcon: ({ color, size }) => (
+              <Image
+                source={require("@/assets/images/running.png")}
+                style={{ width: size, height: size, tintColor: color }}
+                resizeMode='contain'
+              />
+            ),
+          }}
+        />
+        <Tabs.Screen
           name='activities'
           options={{
             title: "Activities",
             tabBarIcon: ({ color, size }) => (
               <Image
-                source={require("@/assets/images/running.png")}
+                source={require("@/assets/images/compass.png")}
                 style={{ width: size, height: size, tintColor: color }}
                 resizeMode='contain'
               />

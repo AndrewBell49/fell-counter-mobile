@@ -4,10 +4,10 @@ import { COLOURS } from "@/constants/colours"
 import { ScrollView, StyleSheet, Text } from "react-native"
 import { DistanceOverTime } from "./visuals/DistanceOverTime"
 
-export default function ActivityPage() {
+export default function SportPage() {
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.text}>View activity data</Text>
+      <Text style={styles.text}>View sport data</Text>
       <SportPie />
       <Divider />
       <DistanceOverTime />
