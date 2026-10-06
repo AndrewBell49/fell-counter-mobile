@@ -1,21 +1,59 @@
 import { createDatabaseAdapter } from "@/services/db/createDatabaseAdapter"
 import { DatabaseAdapter } from "@/services/db/databaseAdapter"
-import { createContext, useContext, useEffect, useState } from "react"
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react"
 
-export const DatabaseContext = createContext<{
+type DatabaseContextValue = {
   database: DatabaseAdapter | null
   isReady: boolean
-}>({ database: null, isReady: false })
+  error: Error | null
+  retryDatabase: () => Promise<void>
+}
+
+export const DatabaseContext = createContext<DatabaseContextValue>({
+  database: null,
+  isReady: false,
+  error: null,
+  retryDatabase: async () => {},
+})
 
 export function DatabaseProvider({ children }: { children: React.ReactNode }) {
   const [database, setDatabase] = useState<DatabaseAdapter | null>(null)
+  const [error, setError] = useState<Error | null>(null)
 
-  useEffect(() => {
-    createDatabaseAdapter().then(setDatabase)
+  const initialiseDatabase = useCallback(async () => {
+    setDatabase(null)
+    setError(null)
+
+    try {
+      const adapter = await createDatabaseAdapter()
+      setDatabase(adapter)
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err
+          : new Error("Unable to initialise the local database"),
+      )
+    }
   }, [])
 
+  useEffect(() => {
+    void initialiseDatabase()
+  }, [initialiseDatabase])
+
   return (
-    <DatabaseContext.Provider value={{ database, isReady: database !== null }}>
+    <DatabaseContext.Provider
+      value={{
+        database,
+        isReady: database !== null,
+        error,
+        retryDatabase: initialiseDatabase,
+      }}>
       {children}
     </DatabaseContext.Provider>
   )

@@ -37,7 +37,7 @@ export async function getActivityInfo(
        FROM bags b
        INNER JOIN fells f ON b.fell_id = f.id
        WHERE b.activity_id = ?
-       ORDER BY b.id ASC`,
+       ORDER BY b.bag_date ASC`,
       [activityId],
     ),
   ])
