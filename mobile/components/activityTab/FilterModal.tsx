@@ -36,6 +36,58 @@ export const FilterModal = ({
   onApply,
   onReset,
 }: FilterModalProps) => {
+  const getRangeError = (min: string, max: string) => {
+    if (!min.trim() || !max.trim()) return undefined
+
+    const minValue = Number(min)
+    const maxValue = Number(max)
+
+    if (
+      Number.isFinite(minValue) &&
+      Number.isFinite(maxValue) &&
+      maxValue <= minValue
+    ) {
+      return "Maximum must be greater than the minimum."
+    }
+
+    return undefined
+  }
+
+  const getDurationError = () => {
+    const hasMin = Boolean(filters.minHours.trim() || filters.minMins.trim())
+    const hasMax = Boolean(filters.maxHours.trim() || filters.maxMins.trim())
+    if (!hasMin || !hasMax) return undefined
+
+    const minDuration =
+      Number(filters.minHours || 0) * 60 + Number(filters.minMins || 0)
+    const maxDuration =
+      Number(filters.maxHours || 0) * 60 + Number(filters.maxMins || 0)
+
+    if (
+      Number.isFinite(minDuration) &&
+      Number.isFinite(maxDuration) &&
+      maxDuration <= minDuration
+    ) {
+      return "Maximum duration must be greater than the minimum duration."
+    }
+
+    return undefined
+  }
+
+  const fellsError = getRangeError(filters.minFells, filters.maxFells)
+  const durationError = getDurationError()
+  const distanceError = getRangeError(
+    filters.minDistance,
+    filters.maxDistance,
+  )
+  const elevationError = getRangeError(
+    filters.minElevation,
+    filters.maxElevation,
+  )
+  const hasValidationErrors = Boolean(
+    fellsError || durationError || distanceError || elevationError,
+  )
+
   const handleSportToggle = (sport: string) => {
     setFilters((f) => {
       const isAll = sport.toLowerCase() === "all"
@@ -116,18 +168,24 @@ export const FilterModal = ({
               maxVal={filters.maxFells}
               minPlaceholder='Min Fells'
               maxPlaceholder='Max Fells'
+              error={fellsError}
               onChangeMin={(v) => setFilters((f) => ({ ...f, minFells: v }))}
               onChangeMax={(v) => setFilters((f) => ({ ...f, maxFells: v }))}
             />
 
             {/* DURATION */}
-            <DurationInput filters={filters} setFilters={setFilters} />
+            <DurationInput
+              filters={filters}
+              setFilters={setFilters}
+              error={durationError}
+            />
 
             {/* DISTANCE RANGE */}
             <RangeInput
               label='Distance (km)'
               minVal={filters.minDistance}
               maxVal={filters.maxDistance}
+              error={distanceError}
               onChangeMin={(v) => setFilters((f) => ({ ...f, minDistance: v }))}
               onChangeMax={(v) => setFilters((f) => ({ ...f, maxDistance: v }))}
             />
@@ -137,6 +195,7 @@ export const FilterModal = ({
               label='Elevation Gain (m)'
               minVal={filters.minElevation}
               maxVal={filters.maxElevation}
+              error={elevationError}
               onChangeMin={(v) =>
                 setFilters((f) => ({ ...f, minElevation: v }))
               }
@@ -151,7 +210,13 @@ export const FilterModal = ({
             <Pressable style={styles.resetBtn} onPress={onReset}>
               <Text style={styles.resetBtnText}>Reset</Text>
             </Pressable>
-            <Pressable style={styles.applyBtn} onPress={onApply}>
+            <Pressable
+              style={[
+                styles.applyBtn,
+                hasValidationErrors && styles.applyBtnDisabled,
+              ]}
+              onPress={onApply}
+              disabled={hasValidationErrors}>
               <Text style={styles.applyBtnText}>Apply Filters</Text>
             </Pressable>
           </View>
@@ -247,5 +312,8 @@ const styles = StyleSheet.create({
   applyBtnText: {
     fontWeight: "bold",
     color: "#fff",
+  },
+  applyBtnDisabled: {
+    backgroundColor: COLOURS.textLight,
   },
 })

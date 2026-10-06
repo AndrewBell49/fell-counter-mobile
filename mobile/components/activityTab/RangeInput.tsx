@@ -11,6 +11,7 @@ interface RangeInputProps {
   onChangeMax: (val: string) => void
   minPlaceholder?: string
   maxPlaceholder?: string
+  error?: string
 }
 
 export const RangeInput = ({
@@ -21,13 +22,14 @@ export const RangeInput = ({
   onChangeMax,
   minPlaceholder = "Min",
   maxPlaceholder = "Max",
+  error,
 }: RangeInputProps) => {
   return (
     <>
       <Text style={styles.sectionTitle}>{label}</Text>
       <View style={styles.inputRow}>
         <TextInput
-          style={styles.input}
+          style={[styles.input, error && styles.inputError]}
           placeholder={minPlaceholder}
           placeholderTextColor={COLOURS.textLight}
           keyboardType='numeric'
@@ -36,7 +38,7 @@ export const RangeInput = ({
         />
         <Text style={styles.inputDash}>-</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, error && styles.inputError]}
           placeholder={maxPlaceholder}
           placeholderTextColor={COLOURS.textLight}
           keyboardType='numeric'
@@ -44,6 +46,7 @@ export const RangeInput = ({
           onChangeText={onChangeMax}
         />
       </View>
+      {error && <Text style={styles.errorText}>{error}</Text>}
     </>
   )
 }
@@ -75,5 +78,13 @@ const styles = StyleSheet.create({
   inputDash: {
     fontSize: 16,
     color: COLOURS.textLight,
+  },
+  inputError: {
+    borderColor: COLOURS.pop,
+  },
+  errorText: {
+    color: COLOURS.pop,
+    fontSize: 12,
+    marginTop: 6,
   },
 })

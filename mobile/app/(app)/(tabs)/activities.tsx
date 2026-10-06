@@ -22,6 +22,7 @@ import {
   SortField,
   SortOrder,
 } from "@/components/activityTab/types"
+import { getActivityEmptyMessage } from "@/components/activityTab/utils"
 
 const PAGE_SIZE = 15
 
@@ -239,7 +240,9 @@ export default function ActivitiesScreen() {
           ) : null
         }
         ListEmptyComponent={
-          <Text style={styles.emptyText}>No activities found</Text>
+          <Text style={styles.emptyText}>
+            {getActivityEmptyMessage(appliedFilters)}
+          </Text>
         }
       />
 

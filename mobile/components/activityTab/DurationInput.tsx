@@ -7,17 +7,22 @@ import { FilterState } from "./types"
 interface DurationInputProps {
   filters: FilterState
   setFilters: React.Dispatch<React.SetStateAction<FilterState>>
+  error?: string
 }
 
-export const DurationInput = ({ filters, setFilters }: DurationInputProps) => {
+export const DurationInput = ({
+  filters,
+  setFilters,
+  error,
+}: DurationInputProps) => {
   return (
     <>
       <Text style={styles.sectionTitle}>Duration</Text>
-      <View style={styles.durationBlock}>
+      <View style={[styles.durationBlock, error && styles.durationBlockError]}>
         <Text style={styles.subLabel}>Min Duration:</Text>
         <View style={styles.inputRow}>
           <TextInput
-            style={styles.input}
+            style={[styles.input, error && styles.inputError]}
             placeholder='Hours'
             placeholderTextColor={COLOURS.textLight}
             keyboardType='numeric'
@@ -26,7 +31,7 @@ export const DurationInput = ({ filters, setFilters }: DurationInputProps) => {
           />
           <Text style={styles.unitText}>h</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, error && styles.inputError]}
             placeholder='Mins'
             placeholderTextColor={COLOURS.textLight}
             keyboardType='numeric'
@@ -39,7 +44,7 @@ export const DurationInput = ({ filters, setFilters }: DurationInputProps) => {
         <Text style={[styles.subLabel, { marginTop: 8 }]}>Max Duration:</Text>
         <View style={styles.inputRow}>
           <TextInput
-            style={styles.input}
+            style={[styles.input, error && styles.inputError]}
             placeholder='Hours'
             placeholderTextColor={COLOURS.textLight}
             keyboardType='numeric'
@@ -48,7 +53,7 @@ export const DurationInput = ({ filters, setFilters }: DurationInputProps) => {
           />
           <Text style={styles.unitText}>h</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, error && styles.inputError]}
             placeholder='Mins'
             placeholderTextColor={COLOURS.textLight}
             keyboardType='numeric'
@@ -58,6 +63,7 @@ export const DurationInput = ({ filters, setFilters }: DurationInputProps) => {
           <Text style={styles.unitText}>m</Text>
         </View>
       </View>
+      {error && <Text style={styles.errorText}>{error}</Text>}
     </>
   )
 }
@@ -82,6 +88,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 10,
   },
+  durationBlockError: {
+    borderColor: COLOURS.pop,
+  },
   inputRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -98,9 +107,17 @@ const styles = StyleSheet.create({
     color: COLOURS.text,
     fontSize: 14,
   },
+  inputError: {
+    borderColor: COLOURS.pop,
+  },
   unitText: {
     fontSize: 13,
     fontWeight: "600",
     color: COLOURS.textLight,
+  },
+  errorText: {
+    color: COLOURS.pop,
+    fontSize: 12,
+    marginTop: 6,
   },
 })
