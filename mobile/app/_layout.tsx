@@ -1,4 +1,3 @@
-import SafeScreen from "@/components/SafeScreen"
 import { Loading } from "@/components/utils/Loading"
 import { DatabaseProvider } from "@/context/DatabaseContext"
 import { UserProvider } from "@/context/UserContext"
@@ -9,6 +8,8 @@ import {
   useFonts,
 } from "@expo-google-fonts/roboto"
 import { Stack } from "expo-router"
+import { StyleSheet } from "react-native"
+import { GestureHandlerRootView } from "react-native-gesture-handler"
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -20,7 +21,7 @@ export default function RootLayout() {
   if (!fontsLoaded) return <Loading />
 
   return (
-    <SafeScreen>
+    <GestureHandlerRootView style={styles.container}>
       <UserProvider>
         <DatabaseProvider>
           <Stack screenOptions={{ headerShown: false }}>
@@ -29,6 +30,12 @@ export default function RootLayout() {
           </Stack>
         </DatabaseProvider>
       </UserProvider>
-    </SafeScreen>
+    </GestureHandlerRootView>
   )
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+})

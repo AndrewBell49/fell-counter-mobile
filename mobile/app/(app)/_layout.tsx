@@ -1,3 +1,4 @@
+import { CustomDrawer } from "@/components/menu/CustomDrawer"
 import { Loading } from "@/components/utils/Loading"
 import { COLOURS } from "@/constants/colours"
 import {
@@ -5,7 +6,8 @@ import {
   ReadyDatabaseProvider,
 } from "@/context/DatabaseContext"
 import { UserContext } from "@/context/UserContext"
-import { Redirect, Stack } from "expo-router"
+import { Redirect } from "expo-router"
+import { Drawer } from "expo-router/drawer"
 import React, { useContext } from "react"
 import { Button, StyleSheet, Text, View } from "react-native"
 
@@ -21,7 +23,9 @@ export default function AppLayout() {
     if (error) {
       return (
         <View style={styles.errorContainer}>
-          <Text style={styles.errorTitle}>Your offline data is unavailable</Text>
+          <Text style={styles.errorTitle}>
+            Your offline data is unavailable
+          </Text>
           <Text style={styles.errorMessage}>
             We could not prepare the local database. Please try again.
           </Text>
@@ -39,25 +43,40 @@ export default function AppLayout() {
 
   return (
     <ReadyDatabaseProvider>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name='(tabs)' />
-        <Stack.Screen
+      <Drawer
+        drawerContent={(props) => <CustomDrawer {...props} />}
+        screenOptions={{
+          headerShown: false,
+          drawerStyle: {
+            width: 280,
+            backgroundColor: COLOURS.background,
+          },
+          swipeEdgeWidth: 100,
+        }}>
+        <Drawer.Screen
+          name='(tabs)'
+          options={{
+            drawerLabel: "Home",
+            title: "Home",
+          }}
+        />
+        <Drawer.Screen
           name='fells/[id]'
           options={{
             headerShown: true,
             title: "Fell Details",
-            animation: "slide_from_right",
+            drawerItemStyle: { display: "none" },
           }}
         />
-        <Stack.Screen
+        <Drawer.Screen
           name='activities/[id]'
           options={{
             headerShown: true,
             title: "Activity Details",
-            animation: "slide_from_right",
+            drawerItemStyle: { display: "none" },
           }}
         />
-      </Stack>
+      </Drawer>
     </ReadyDatabaseProvider>
   )
 }

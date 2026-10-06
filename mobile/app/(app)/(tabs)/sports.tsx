@@ -1,13 +1,16 @@
 import SportPage from "@/components/SportPage"
+import { useCollapsibleHeader } from "@/components/utils/CollapsibleHeaderContext"
 import { Loading } from "@/components/utils/Loading"
 import { Visual } from "@/components/utils/Visual"
 import { SportProvider } from "@/context/SportContext"
 import { useDatabase } from "@/hooks/useDatabase"
 import { IGetSportCount } from "@/services/db/types"
 import { useEffect, useState } from "react"
+import { View } from "react-native"
 
 export default function SportsScreen() {
   const database = useDatabase()
+  const { headerHeightWithInsets } = useCollapsibleHeader()
   const [allSports, setAllSports] = useState<IGetSportCount[] | null>(null)
 
   useEffect(() => {
@@ -20,9 +23,11 @@ export default function SportsScreen() {
 
   if (!allSports) {
     return (
-      <Visual title='Loading Sports'>
-        <Loading />
-      </Visual>
+      <View style={{ flex: 1, paddingTop: headerHeightWithInsets }}>
+        <Visual title='Loading Sports'>
+          <Loading />
+        </Visual>
+      </View>
     )
   }
 
@@ -32,8 +37,10 @@ export default function SportsScreen() {
   )
 
   return (
-    <SportProvider defaultSport={maxIndex} defaultAllSports={allSports}>
-      <SportPage />
-    </SportProvider>
+    <View style={{ flex: 1 }}>
+      <SportProvider defaultSport={maxIndex} defaultAllSports={allSports}>
+        <SportPage />
+      </SportProvider>
+    </View>
   )
 }

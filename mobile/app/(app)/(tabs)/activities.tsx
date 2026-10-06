@@ -1,3 +1,4 @@
+import { useCollapsibleHeader } from "@/components/utils/CollapsibleHeaderContext"
 import { Loading } from "@/components/utils/Loading"
 import { Text } from "@/components/utils/Text"
 import { COLOURS } from "@/constants/colours"
@@ -7,12 +8,12 @@ import { Ionicons } from "@expo/vector-icons"
 import React, { useCallback, useEffect, useState } from "react"
 import {
   ActivityIndicator,
-  FlatList,
   Pressable,
   RefreshControl,
   StyleSheet,
   View,
 } from "react-native"
+import Animated from "react-native-reanimated"
 
 import { ActivityCard } from "@/components/activityTab/ActivityCard"
 import { FilterModal } from "@/components/activityTab/FilterModal"
@@ -28,6 +29,8 @@ const PAGE_SIZE = 15
 
 export default function ActivitiesScreen() {
   const database = useDatabase()
+  const { scrollHandler, headerHeightWithInsets } = useCollapsibleHeader()
+
   const [activities, setActivities] = useState<IActivityListItem[]>([])
   const [sportOptions, setSportOptions] = useState<string[]>(["All"])
   const [page, setPage] = useState(1)
@@ -79,7 +82,6 @@ export default function ActivitiesScreen() {
     )
 
     if (selectedSports.length > 0) {
-      // If your backend database query accepts array or comma-separated string:
       params.sport =
         selectedSports.length === 1
           ? selectedSports[0]
@@ -191,8 +193,10 @@ export default function ActivitiesScreen() {
 
   if (initialLoading) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.text}>Activities</Text>
+      <View style={[styles.container, { paddingTop: headerHeightWithInsets }]}>
+        <View style={styles.headerRow}>
+          <Text style={styles.text}>Activities</Text>
+        </View>
         <View style={styles.centered}>
           <Loading />
         </View>
@@ -202,26 +206,36 @@ export default function ActivitiesScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.headerRow}>
-        <Text style={styles.text}>Activities</Text>
-        <Pressable
-          style={styles.filterBtn}
-          onPress={() => setFilterModalVisible(true)}>
-          <Ionicons name='options-outline' size={18} color={COLOURS.primary} />
-          <Text style={styles.filterBtnText}>Filter & Sort</Text>
-          {activeFilterCount > 0 && (
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{activeFilterCount}</Text>
-            </View>
-          )}
-        </Pressable>
-      </View>
-
-      <FlatList
+      <Animated.FlatList
         data={activities}
         keyExtractor={(item) => String(item.id)}
         renderItem={({ item }) => <ActivityCard item={item} />}
-        contentContainerStyle={styles.listContent}
+        onScroll={scrollHandler}
+        scrollEventThrottle={5}
+        ListHeaderComponent={
+          <View style={styles.headerRow}>
+            <Text style={styles.text}>Activities</Text>
+            <Pressable
+              style={styles.filterBtn}
+              onPress={() => setFilterModalVisible(true)}>
+              <Ionicons
+                name='options-outline'
+                size={18}
+                color={COLOURS.primary}
+              />
+              <Text style={styles.filterBtnText}>Filter & Sort</Text>
+              {activeFilterCount > 0 && (
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>{activeFilterCount}</Text>
+                </View>
+              )}
+            </Pressable>
+          </View>
+        }
+        contentContainerStyle={[
+          styles.listContent,
+          { paddingTop: headerHeightWithInsets + 10 },
+        ]}
         onEndReached={handleEndReached}
         onEndReachedThreshold={0.4}
         refreshControl={
@@ -230,6 +244,7 @@ export default function ActivitiesScreen() {
             onRefresh={handleRefresh}
             tintColor={COLOURS.primary}
             colors={[COLOURS.primary]}
+            progressViewOffset={headerHeightWithInsets}
           />
         }
         ListFooterComponent={
@@ -266,7 +281,6 @@ export default function ActivitiesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 10,
     backgroundColor: COLOURS.background,
   },
   headerRow: {
@@ -312,6 +326,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   listContent: {
+    paddingHorizontal: 10,
     paddingBottom: 16,
   },
   footerLoading: {

@@ -1,4 +1,5 @@
 import { FellMap } from "@/components/maps/FellMap"
+import SafeScreen from "@/components/SafeScreen"
 import { Loading } from "@/components/utils/Loading"
 import { Text } from "@/components/utils/Text"
 import { COLOURS } from "@/constants/colours"
@@ -88,52 +89,54 @@ export default function MapScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      {/* Map View */}
-      {fellLocations.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>
-            No fells found for this classification
-          </Text>
-        </View>
-      ) : (
-        <FellMap data={fellLocations} />
-      )}
+    <SafeScreen>
+      <View style={styles.container}>
+        {/* Map View */}
+        {fellLocations.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>
+              No fells found for this classification
+            </Text>
+          </View>
+        ) : (
+          <FellMap data={fellLocations} />
+        )}
 
-      {/* Floating Classification Picker Bar */}
-      <View
-        style={[styles.pickerContainer, { minHeight: pickerContentHeight }]}>
+        {/* Floating Classification Picker Bar */}
         <View
-          style={styles.pickerTextWrap}
-          pointerEvents='none'
-          onLayout={(e) => {
-            const measuredHeight = e.nativeEvent.layout.height
-            setPickerContentHeight(Math.max(64, measuredHeight + 16))
-          }}>
-          <Text style={styles.pickerText}>
-            {getClassificationText(selectedClassification).title}
-          </Text>
-          <Text style={styles.pickerTextSub}>
-            {getClassificationText(selectedClassification).subtitle}
-          </Text>
-        </View>
+          style={[styles.pickerContainer, { minHeight: pickerContentHeight }]}>
+          <View
+            style={styles.pickerTextWrap}
+            pointerEvents='none'
+            onLayout={(e) => {
+              const measuredHeight = e.nativeEvent.layout.height
+              setPickerContentHeight(Math.max(64, measuredHeight + 16))
+            }}>
+            <Text style={styles.pickerText}>
+              {getClassificationText(selectedClassification).title}
+            </Text>
+            <Text style={styles.pickerTextSub}>
+              {getClassificationText(selectedClassification).subtitle}
+            </Text>
+          </View>
 
-        <Picker
-          selectedValue={selectedClassification}
-          onValueChange={(value) => setSelectedClassification(value)}
-          style={[styles.picker, { height: pickerContentHeight }]}
-          dropdownIconColor={COLOURS.text}>
-          <Picker.Item label='All bagged fells' value={-1} />
-          {classifications.map((classification) => (
-            <Picker.Item
-              key={classification.id}
-              label={classification.name}
-              value={classification.id}
-            />
-          ))}
-        </Picker>
+          <Picker
+            selectedValue={selectedClassification}
+            onValueChange={(value) => setSelectedClassification(value)}
+            style={[styles.picker, { height: pickerContentHeight }]}
+            dropdownIconColor={COLOURS.text}>
+            <Picker.Item label='All bagged fells' value={-1} />
+            {classifications.map((classification) => (
+              <Picker.Item
+                key={classification.id}
+                label={classification.name}
+                value={classification.id}
+              />
+            ))}
+          </Picker>
+        </View>
       </View>
-    </View>
+    </SafeScreen>
   )
 }
 

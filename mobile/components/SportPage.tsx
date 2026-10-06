@@ -1,27 +1,40 @@
+import { useCollapsibleHeader } from "@/components/utils/CollapsibleHeaderContext"
 import { Divider } from "@/components/utils/Divider"
 import { SportPie } from "@/components/visuals/SportPie"
 import { COLOURS } from "@/constants/colours"
-import { ScrollView, StyleSheet, Text } from "react-native"
+import { StyleSheet, Text } from "react-native"
+import Animated from "react-native-reanimated"
 import { DistanceOverTime } from "./visuals/DistanceOverTime"
 
 export default function SportPage() {
+  const { scrollHandler, headerHeightWithInsets } = useCollapsibleHeader()
+
   return (
-    <ScrollView style={styles.container}>
+    <Animated.ScrollView
+      style={styles.scrollView}
+      contentContainerStyle={[
+        styles.container,
+        { paddingTop: headerHeightWithInsets + 10 },
+      ]}
+      onScroll={scrollHandler}
+      scrollEventThrottle={16}>
       <Text style={styles.text}>View sport data</Text>
       <SportPie />
       <Divider />
       <DistanceOverTime />
-    </ScrollView>
+    </Animated.ScrollView>
   )
 }
 
 const styles = StyleSheet.create({
+  scrollView: {
+    backgroundColor: COLOURS.background,
+  },
   container: {
     display: "flex",
     flexDirection: "column",
     padding: 10,
     gap: 10,
-    backgroundColor: COLOURS.background,
   },
   text: {
     display: "flex",
