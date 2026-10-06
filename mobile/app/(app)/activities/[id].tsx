@@ -7,14 +7,19 @@ import { Visual } from "@/components/utils/Visual"
 import { COLOURS } from "@/constants/colours"
 import { useApi } from "@/hooks/useApi"
 import { useDatabase } from "@/hooks/useDatabase"
+import { getDetailDepth } from "@/services/navigation/detailNavigation"
 import { IGetActivityInfo } from "@/services/db/types"
 import { Stack, useLocalSearchParams } from "expo-router"
 import React, { useEffect, useState } from "react"
 import { ScrollView, StyleSheet, View } from "react-native"
 
 export default function ActivityDetailsScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>()
+  const { id, detailDepth } = useLocalSearchParams<{
+    id: string
+    detailDepth?: string | string[]
+  }>()
   const activityId = Number(id)
+  const currentDetailDepth = getDetailDepth(detailDepth)
   const { request } = useApi()
 
   const database = useDatabase()
@@ -75,6 +80,8 @@ export default function ActivityDetailsScreen() {
         <ActivityFellsList
           baggedFells={activityInfo.baggedFells}
           onRemoveBag={handleRemoveBag}
+          activityId={activityInfo.id}
+          detailDepth={currentDetailDepth}
         />
       </ScrollView>
     </View>

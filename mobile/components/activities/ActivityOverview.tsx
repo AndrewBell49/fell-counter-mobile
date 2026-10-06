@@ -5,7 +5,7 @@ import { M_TO_FT } from "@/constants/constants"
 import { IGetActivityInfo } from "@/services/db/types"
 import { Ionicons } from "@expo/vector-icons"
 import React from "react"
-import { StyleSheet, View } from "react-native"
+import { Linking, Platform, Pressable, StyleSheet, View } from "react-native"
 
 function formatDuration(seconds: number): string {
   const h = Math.floor(seconds / 3600)
@@ -41,6 +41,21 @@ export default function ActivityOverview({
 }) {
   const distanceKm = (activityInfo.distance / 1000).toFixed(2)
   const elevationFt = Math.round(activityInfo.elevationGain * M_TO_FT)
+
+  const handleOpenInStrava = async () => {
+    const webUrl = `https://www.strava.com/activities/${activityInfo.id}`
+
+    if (Platform.OS === "web") {
+      await Linking.openURL(webUrl)
+      return
+    }
+
+    try {
+      await Linking.openURL(`strava://activities/${activityInfo.id}`)
+    } catch {
+      await Linking.openURL(webUrl)
+    }
+  }
 
   return (
     <View style={styles.container}>
@@ -97,6 +112,16 @@ export default function ActivityOverview({
           <Text style={styles.statLabel}>Elevation Gain</Text>
         </View>
       </View>
+
+      <Pressable
+        style={({ pressed }) => [
+          styles.stravaButton,
+          pressed && styles.stravaButtonPressed,
+        ]}
+        onPress={() => void handleOpenInStrava()}>
+        <Ionicons name='open-outline' size={18} color='#fff' />
+        <Text style={styles.stravaButtonText}>Open in Strava</Text>
+      </Pressable>
     </View>
   )
 }
@@ -180,5 +205,24 @@ const styles = StyleSheet.create({
     color: COLOURS.textLight,
     marginTop: 4,
     textAlign: "center",
+  },
+  stravaButton: {
+    alignItems: "center",
+    backgroundColor: "#FC4C02",
+    borderRadius: 10,
+    flexDirection: "row",
+    gap: 8,
+    justifyContent: "center",
+    marginTop: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  stravaButtonPressed: {
+    opacity: 0.8,
+  },
+  stravaButtonText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "700",
   },
 })

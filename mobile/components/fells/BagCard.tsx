@@ -2,8 +2,11 @@ import SportIcon from "@/components/utils/SportIcon"
 import { Text } from "@/components/utils/Text"
 import { COLOURS } from "@/constants/colours"
 import { IGetFellInfo } from "@/services/db/types"
+import {
+  openDetail,
+  type DetailDestination,
+} from "@/services/navigation/detailNavigation"
 import { Ionicons } from "@expo/vector-icons"
-import { router } from "expo-router"
 import React from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 
@@ -21,7 +24,20 @@ function formatDate(dateValue: string | number): string {
   return `${day}/${month}/${year}`
 }
 
-export default function BagCard({ fellInfo }: { fellInfo: IGetFellInfo }) {
+export default function BagCard({
+  fellInfo,
+  fellId,
+  detailDepth,
+}: {
+  fellInfo: IGetFellInfo
+  fellId: number
+  detailDepth: number
+}) {
+  const currentFell: DetailDestination = {
+    pathname: "/fells/[id]",
+    params: { id: fellId },
+  }
+
   return (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>Bagged Dates</Text>
@@ -34,10 +50,14 @@ export default function BagCard({ fellInfo }: { fellInfo: IGetFellInfo }) {
               pressed && styles.cardPressed,
             ]}
             onPress={() =>
-              router.push({
-                pathname: "/activities/[id]",
-                params: { id: bag.activityId },
-              })
+              openDetail(
+                currentFell,
+                {
+                  pathname: "/activities/[id]",
+                  params: { id: bag.activityId },
+                },
+                detailDepth,
+              )
             }>
             <Ionicons
               name='checkmark-circle'

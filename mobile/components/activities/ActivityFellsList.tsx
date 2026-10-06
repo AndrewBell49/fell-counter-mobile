@@ -1,8 +1,11 @@
 import { Text } from "@/components/utils/Text"
 import { COLOURS } from "@/constants/colours"
 import { IActivityBaggedFell } from "@/services/db/types"
+import {
+  openDetail,
+  type DetailDestination,
+} from "@/services/navigation/detailNavigation"
 import { Ionicons } from "@expo/vector-icons"
-import { router } from "expo-router"
 import React from "react"
 import { Alert, Pressable, StyleSheet, View } from "react-native"
 
@@ -15,9 +18,13 @@ function getOrdinalSuffix(n: number): string {
 export default function ActivityFellsList({
   baggedFells,
   onRemoveBag,
+  activityId,
+  detailDepth,
 }: {
   baggedFells: IActivityBaggedFell[]
   onRemoveBag: (bagId: number) => void
+  activityId: number
+  detailDepth: number
 }) {
   // Count total occurrences of each fellId in this activity list
   const totalCounts = baggedFells.reduce<Record<number, number>>((acc, bag) => {
@@ -40,6 +47,11 @@ export default function ActivityFellsList({
     )
   }
 
+  const currentActivity: DetailDestination = {
+    pathname: "/activities/[id]",
+    params: { id: activityId },
+  }
+
   return (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>
@@ -58,10 +70,14 @@ export default function ActivityFellsList({
                 pressed && styles.cardPressed,
               ]}
               onPress={() =>
-                router.push({
-                  pathname: "/fells/[id]",
-                  params: { id: bag.fellId },
-                })
+                openDetail(
+                  currentActivity,
+                  {
+                    pathname: "/fells/[id]",
+                    params: { id: bag.fellId },
+                  },
+                  detailDepth,
+                )
               }>
               <Ionicons
                 name='triangle'

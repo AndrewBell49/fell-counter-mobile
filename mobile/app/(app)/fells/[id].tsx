@@ -8,14 +8,19 @@ import { Visual } from "@/components/utils/Visual"
 import { COLOURS } from "@/constants/colours"
 import { M_TO_FT } from "@/constants/constants"
 import { useDatabase } from "@/hooks/useDatabase"
+import { getDetailDepth } from "@/services/navigation/detailNavigation"
 import { IGetFellInfo } from "@/services/db/types"
 import { Stack, useLocalSearchParams } from "expo-router"
 import React, { useEffect, useState } from "react"
 import { ScrollView, StyleSheet, View } from "react-native"
 
 export default function FellDetailsScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>()
+  const { id, detailDepth } = useLocalSearchParams<{
+    id: string
+    detailDepth?: string | string[]
+  }>()
   const fellId = Number(id)
+  const currentDetailDepth = getDetailDepth(detailDepth)
 
   const database = useDatabase()
   const [fellInfo, setFellInfo] = useState<IGetFellInfo | undefined | null>(
@@ -66,7 +71,11 @@ export default function FellDetailsScreen() {
 
         <TerrainMap fellInfo={fellInfo} />
 
-        <BagCard fellInfo={fellInfo} />
+        <BagCard
+          fellInfo={fellInfo}
+          fellId={fellId}
+          detailDepth={currentDetailDepth}
+        />
 
         <Classifications fellInfo={fellInfo} />
       </ScrollView>
