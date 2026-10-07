@@ -37,11 +37,23 @@ export async function getFellData(req: Request, res: Response) {
     currentDate,
   )
 
+  const finished =
+    fells.length < ROW_RETURN_LIMIT && removedFells.length < ROW_RETURN_LIMIT
+
+  const nextCursor =
+    finished || (fells.length === 0 && removedFells.length === 0)
+      ? null
+      : Math.max(
+          ...fells.map((f) => f.id),
+          ...removedFells.map((f) => f.id),
+          page ?? 0,
+        )
+
   return res.json({
     items: fells,
     removed_items: removedFells,
-    finished:
-      fells.length < ROW_RETURN_LIMIT && removedFells.length < ROW_RETURN_LIMIT,
+    finished,
+    nextCursor,
     nextUpdate: currentDate,
   })
 }

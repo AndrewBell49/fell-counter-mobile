@@ -1,5 +1,5 @@
 import { db } from "../.."
-import { eq, min, max, and, isNull, gte, lt } from "drizzle-orm"
+import { eq, min, max, and, isNull, gte, gt, lt } from "drizzle-orm"
 import {
   activeActivities,
   inactiveActivities,
@@ -58,11 +58,11 @@ export async function getAllActiveActivities(
         eq(activeActivities.active, true),
         gte(activeActivities.updated_at, startDate),
         lt(activeActivities.updated_at, endDate),
+        page ? gt(activeActivities.id, page) : undefined,
       ),
     )
     .orderBy(activeActivities.id)
     .limit(ROW_RETURN_LIMIT)
-    .offset((page ?? 0) * ROW_RETURN_LIMIT)
 }
 
 export async function getAllInactiveActivities(
@@ -88,11 +88,11 @@ export async function getAllInactiveActivities(
         eq(inactiveActivities.user_id, userId),
         gte(inactiveActivities.updated_at, startDate),
         lt(inactiveActivities.updated_at, endDate),
+        page ? gt(inactiveActivities.id, page) : undefined,
       ),
     )
     .orderBy(inactiveActivities.id)
     .limit(ROW_RETURN_LIMIT)
-    .offset((page ?? 0) * ROW_RETURN_LIMIT)
 
   return result
 }

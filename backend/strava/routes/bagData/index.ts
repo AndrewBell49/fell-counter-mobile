@@ -26,19 +26,32 @@ export async function getBagData(req: Request, res: Response) {
   const bags = (
     await getAllActiveBags(res.locals.user.id, page, lastUpdated, currentDate)
   ).map((bag) => {
-    return { ...bag, bag_date: bag.bag_date.getTime() }
+    return { ...bag, bag_date: bag.bag_date }
   })
 
   const removedBags = (
     await getAllInactiveBags(res.locals.user.id, page, lastUpdated, currentDate)
   ).map((bag) => {
-    return { ...bag, bag_date: bag.bag_date.getTime() }
+    return { ...bag, bag_date: bag.bag_date }
   })
+
+  const finished =
+    bags.length < ROW_RETURN_LIMIT && removedBags.length < ROW_RETURN_LIMIT
+
+  const nextCursor =
+    finished || (bags.length === 0 && removedBags.length === 0)
+      ? null
+      : Math.max(
+          ...bags.map((b) => b.id),
+          ...removedBags.map((b) => b.id),
+          page ?? 0,
+        )
 
   return res.json({
     items: bags,
     removed_items: removedBags,
-    finished:
-      bags.length < ROW_RETURN_LIMIT && removedBags.length < ROW_RETURN_LIMIT,
+    finished,
+    nextCursor,
+    nextUpdate: currentDate,
   })
 }

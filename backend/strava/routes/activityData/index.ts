@@ -45,12 +45,24 @@ export async function getActivityData(req: Request, res: Response) {
     return { ...activity, start_date: activity.start_date.getTime() }
   })
 
+  const finished =
+    activities.length < ROW_RETURN_LIMIT &&
+    removedActivities.length < ROW_RETURN_LIMIT
+
+  const nextCursor =
+    finished || (activities.length === 0 && removedActivities.length === 0)
+      ? null
+      : Math.max(
+          ...activities.map((a) => a.id),
+          ...removedActivities.map((a) => a.id),
+          page ?? 0,
+        )
+
   return res.json({
     items: activities,
     removed_items: removedActivities,
-    finished:
-      activities.length < ROW_RETURN_LIMIT &&
-      removedActivities.length < ROW_RETURN_LIMIT,
+    finished,
+    nextCursor,
     nextUpdate: currentDate,
   })
 }

@@ -1,4 +1,4 @@
-import { and, gte, lt } from "drizzle-orm"
+import { and, gte, gt, lt } from "drizzle-orm"
 import { db } from "../.."
 import { ROW_RETURN_LIMIT } from "../../../lib/constants"
 import {
@@ -21,6 +21,7 @@ export async function getAllActiveFellClassifications(
       and(
         gte(activeFellClassifications.updated_at, startDate),
         lt(activeFellClassifications.updated_at, endDate),
+        page ? gt(activeFellClassifications.fell_id, page) : undefined,
       ),
     )
     .orderBy(
@@ -28,7 +29,6 @@ export async function getAllActiveFellClassifications(
       activeFellClassifications.classification_id,
     )
     .limit(ROW_RETURN_LIMIT)
-    .offset((page ?? 0) * ROW_RETURN_LIMIT)
 }
 
 export async function getAllInactiveFellClassifications(
@@ -46,6 +46,7 @@ export async function getAllInactiveFellClassifications(
       and(
         gte(inactiveFellClassifications.updated_at, startDate),
         lt(inactiveFellClassifications.updated_at, endDate),
+        page ? gt(inactiveFellClassifications.fell_id, page) : undefined,
       ),
     )
     .orderBy(
@@ -53,5 +54,4 @@ export async function getAllInactiveFellClassifications(
       inactiveFellClassifications.classification_id,
     )
     .limit(ROW_RETURN_LIMIT)
-    .offset((page ?? 0) * ROW_RETURN_LIMIT)
 }

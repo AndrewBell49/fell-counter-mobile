@@ -35,12 +35,25 @@ export async function getClassificationData(req: Request, res: Response) {
     currentDate,
   )
 
+  const finished =
+    classifications.length < ROW_RETURN_LIMIT &&
+    removedClassifications.length < ROW_RETURN_LIMIT
+
+  const nextCursor =
+    finished ||
+    (classifications.length === 0 && removedClassifications.length === 0)
+      ? null
+      : Math.max(
+          ...classifications.map((c) => c.id),
+          ...removedClassifications.map((c) => c.id),
+          page ?? 0,
+        )
+
   return res.json({
     items: classifications,
     removed_items: removedClassifications,
-    finished:
-      classifications.length < ROW_RETURN_LIMIT &&
-      removedClassifications.length < ROW_RETURN_LIMIT,
+    finished,
+    nextCursor,
     nextUpdate: currentDate,
   })
 }

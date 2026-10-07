@@ -29,18 +29,33 @@ export async function getFellClassificationData(req: Request, res: Response) {
     currentDate,
   )
 
-  const removedFellClassifications = await getAllInactiveFellClassifications(
-    page,
-    lastUpdated,
-    currentDate,
-  )
+  const removedFellClassifications =
+    await getAllInactiveFellClassifications(
+      page,
+      lastUpdated,
+      currentDate,
+    )
+
+  const finished =
+    fellClassifications.length < ROW_RETURN_LIMIT &&
+    removedFellClassifications.length < ROW_RETURN_LIMIT
+
+  const nextCursor =
+    finished ||
+    (fellClassifications.length === 0 &&
+      removedFellClassifications.length === 0)
+      ? null
+      : Math.max(
+          ...fellClassifications.map((fc) => fc.fell_id),
+          ...removedFellClassifications.map((fc) => fc.fell_id),
+          page ?? 0,
+        )
 
   return res.json({
     items: fellClassifications,
     removed_items: removedFellClassifications,
-    finished:
-      fellClassifications.length < ROW_RETURN_LIMIT &&
-      removedFellClassifications.length < ROW_RETURN_LIMIT,
+    finished,
+    nextCursor,
     nextUpdate: currentDate,
   })
 }

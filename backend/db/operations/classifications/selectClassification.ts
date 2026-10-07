@@ -1,4 +1,4 @@
-import { and, gte, lt } from "drizzle-orm"
+import { and, gte, gt, lt } from "drizzle-orm"
 import { db } from "../.."
 import { ROW_RETURN_LIMIT } from "../../../lib/constants"
 import {
@@ -22,11 +22,11 @@ export async function getAllActiveClassifications(
       and(
         gte(activeClassifications.updated_at, startDate),
         lt(activeClassifications.updated_at, endDate),
+        page ? gt(activeClassifications.id, page) : undefined,
       ),
     )
     .orderBy(activeClassifications.id)
     .limit(ROW_RETURN_LIMIT)
-    .offset((page ?? 0) * ROW_RETURN_LIMIT)
 }
 
 export async function getAllInactiveClassifications(
@@ -45,9 +45,9 @@ export async function getAllInactiveClassifications(
       and(
         gte(inactiveClassifications.updated_at, startDate),
         lt(inactiveClassifications.updated_at, endDate),
+        page ? gt(inactiveClassifications.id, page) : undefined,
       ),
     )
     .orderBy(inactiveClassifications.id)
     .limit(ROW_RETURN_LIMIT)
-    .offset((page ?? 0) * ROW_RETURN_LIMIT)
 }

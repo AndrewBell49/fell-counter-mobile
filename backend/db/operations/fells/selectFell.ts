@@ -1,5 +1,5 @@
 import { db } from "../.."
-import { between, and, eq, inArray, gte, lt, or } from "drizzle-orm"
+import { between, and, eq, inArray, gte, gt, lt, or } from "drizzle-orm"
 import { ROW_RETURN_LIMIT } from "../../../lib/constants"
 import { Fell, activeFells, inactiveFells } from "../../schema/fells"
 import { activeBags } from "../../schema/bags"
@@ -112,11 +112,11 @@ export async function getAllActiveUserFells(
           inArray(activeFells.id, newlyBaggedSubquery),
           inArray(activeFells.id, newlyClassifiedSubquery),
         ),
+        page ? gt(activeFells.id, page) : undefined,
       ),
     )
     .orderBy(activeFells.id)
     .limit(ROW_RETURN_LIMIT)
-    .offset((page ?? 0) * ROW_RETURN_LIMIT)
 
   return result
 }
@@ -155,11 +155,11 @@ export async function getAllInactiveUserFells(
         ),
         gte(inactiveFells.updated_at, startDate),
         lt(inactiveFells.updated_at, endDate),
+        page ? gt(inactiveFells.id, page) : undefined,
       ),
     )
     .orderBy(inactiveFells.id)
     .limit(ROW_RETURN_LIMIT)
-    .offset((page ?? 0) * ROW_RETURN_LIMIT)
 
   return result
 }

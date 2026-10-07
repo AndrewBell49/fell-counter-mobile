@@ -5,6 +5,7 @@ interface UpdateSchema<T> {
   items: T[]
   removed_items: T[]
   finished: boolean
+  nextCursor: number | null
 }
 
 export async function getUpdateData<T>(
@@ -16,12 +17,12 @@ export async function getUpdateData<T>(
   const items: T[] = []
   const removedItems: T[] = []
 
-  let page = 0
+  let cursorId = 0
   let dataToCome = true
 
   while (dataToCome) {
     const data = await request<UpdateSchema<T>>({
-      url: `${SERVER_URL}/strava/${name}-data/${page}?currentDate=${currentDate.getTime()}&lastUpdated=${lastUpdated?.getTime() ?? ""}`,
+      url: `${SERVER_URL}/strava/${name}-data/${cursorId}?currentDate=${currentDate.getTime()}&lastUpdated=${lastUpdated?.getTime() ?? ""}`,
     })
 
     items.push(...data.items)
@@ -30,7 +31,7 @@ export async function getUpdateData<T>(
     if (data.finished) {
       break
     }
-    page++
+    cursorId = data.nextCursor ?? 0
   }
   return { items, removedItems }
 }

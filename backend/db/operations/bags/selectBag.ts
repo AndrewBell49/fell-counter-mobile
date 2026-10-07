@@ -1,4 +1,4 @@
-import { eq, and, gte, lt } from "drizzle-orm"
+import { eq, and, gte, gt, lt } from "drizzle-orm"
 import { db } from "../.."
 import { ROW_RETURN_LIMIT } from "../../../lib/constants"
 import { activeBags, inactiveBags } from "../../schema/bags"
@@ -22,11 +22,11 @@ export async function getAllActiveBags(
         eq(activeBags.user_id, userId),
         gte(activeBags.updated_at, startDate),
         lt(activeBags.updated_at, endDate),
+        page ? gt(activeBags.id, page) : undefined,
       ),
     )
     .orderBy(activeBags.id)
     .limit(ROW_RETURN_LIMIT)
-    .offset((page ?? 0) * ROW_RETURN_LIMIT)
 }
 
 export async function getAllInactiveBags(
@@ -48,11 +48,11 @@ export async function getAllInactiveBags(
         eq(inactiveBags.user_id, userId),
         gte(inactiveBags.updated_at, startDate),
         lt(inactiveBags.updated_at, endDate),
+        page ? gt(inactiveBags.id, page) : undefined,
       ),
     )
     .orderBy(inactiveBags.id)
     .limit(ROW_RETURN_LIMIT)
-    .offset((page ?? 0) * ROW_RETURN_LIMIT)
 }
 
 export async function getActiveBagsForActivity(activityId: number) {
