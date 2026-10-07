@@ -43,11 +43,7 @@ export function CustomDrawer(props: DrawerContentComponentProps) {
               key={item.label}
               style={styles.menuItem}
               onPress={() => router.push(item.route as any)}>
-              <Ionicons
-                name={item.icon as any}
-                size={22}
-                color={COLOURS.pop || "#333"}
-              />
+              <Ionicons name={item.icon as any} size={22} color={COLOURS.pop} />
               <Text style={styles.menuText}>{item.label}</Text>
             </TouchableOpacity>
           ))}
@@ -59,7 +55,7 @@ export function CustomDrawer(props: DrawerContentComponentProps) {
         <TouchableOpacity
           style={styles.logoutBtn}
           onPress={() => router.replace("/(auth)/login" as any)}>
-          <Ionicons name='log-out-outline' size={20} color='#E53E3E' />
+          <Ionicons name='log-out-outline' size={20} color={COLOURS.pop} />
           <Text style={styles.logoutText}>Log Out</Text>
         </TouchableOpacity>
       </View>
@@ -83,29 +79,29 @@ const styles = StyleSheet.create({
     width: 54,
     height: 54,
     borderRadius: 27,
-    backgroundColor: COLOURS.pop || "#4A90E2",
+    backgroundColor: COLOURS.pop,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 10,
   },
   avatarText: {
-    color: "#FFF",
+    color: COLOURS.background,
     fontSize: 22,
     fontWeight: "bold",
   },
   userName: {
     fontSize: 18,
     fontWeight: "bold",
-    color: COLOURS.text || "#000",
+    color: COLOURS.text,
   },
   userEmail: {
     fontSize: 13,
-    color: COLOURS.textLight || "#666",
+    color: COLOURS.textLight,
     marginTop: 2,
   },
   divider: {
     height: 1,
-    backgroundColor: COLOURS.border || "#E5E5E5",
+    backgroundColor: COLOURS.border,
     marginVertical: 10,
   },
   menuContainer: {
@@ -122,12 +118,12 @@ const styles = StyleSheet.create({
   menuText: {
     fontSize: 15,
     fontWeight: "500",
-    color: COLOURS.text || "#000",
+    color: COLOURS.text,
   },
   footer: {
     padding: 20,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: COLOURS.border || "#E5E5E5",
+    borderTopColor: COLOURS.border,
   },
   logoutBtn: {
     flexDirection: "row",
@@ -135,7 +131,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   logoutText: {
-    color: "#E53E3E",
+    color: COLOURS.text,
     fontWeight: "600",
     fontSize: 15,
   },

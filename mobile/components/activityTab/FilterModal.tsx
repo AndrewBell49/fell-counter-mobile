@@ -6,6 +6,7 @@ import { Modal, Pressable, ScrollView, StyleSheet, View } from "react-native"
 
 import { DurationInput } from "./DurationInput"
 import { RangeInput } from "./RangeInput"
+import { SearchBarInput } from "./SearchBarInput"
 import { SortSection } from "./SortSection"
 import { FilterState, SortField, SortOrder } from "./types"
 
@@ -76,10 +77,7 @@ export const FilterModal = ({
 
   const fellsError = getRangeError(filters.minFells, filters.maxFells)
   const durationError = getDurationError()
-  const distanceError = getRangeError(
-    filters.minDistance,
-    filters.maxDistance,
-  )
+  const distanceError = getRangeError(filters.minDistance, filters.maxDistance)
   const elevationError = getRangeError(
     filters.minElevation,
     filters.maxElevation,
@@ -93,7 +91,6 @@ export const FilterModal = ({
       const isAll = sport.toLowerCase() === "all"
       if (isAll) return { ...f, sports: ["All"] }
 
-      // Remove "All" if picking a specific sport
       const currentSports = f.sports.filter((s) => s.toLowerCase() !== "all")
       const exists = currentSports.some(
         (s) => s.toLowerCase() === sport.toLowerCase(),
@@ -121,13 +118,21 @@ export const FilterModal = ({
         <View style={styles.modalContent}>
           {/* MODAL HEADER */}
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Filter & Sort</Text>
+            <Text style={styles.modalTitle}>Search, Filter & Sort</Text>
             <Pressable onPress={onClose}>
               <Ionicons name='close' size={24} color={COLOURS.text} />
             </Pressable>
           </View>
 
           <ScrollView style={styles.modalBody}>
+            {/* KEYWORD SEARCH */}
+            <Text style={styles.sectionTitle}>Search Keywords</Text>
+            <SearchBarInput
+              value={filters.search}
+              onChangeText={(v) => setFilters((f) => ({ ...f, search: v }))}
+              onClear={() => setFilters((f) => ({ ...f, search: "" }))}
+            />
+
             {/* SORT SECTION */}
             <SortSection
               sortBy={sortBy}
@@ -248,6 +253,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: "bold",
+    color: COLOURS.text,
   },
   modalBody: {
     marginBottom: 16,

@@ -4,7 +4,8 @@ export type SortField = NonNullable<IGetActivitiesParams["sortBy"]>
 export type SortOrder = "ASC" | "DESC"
 
 export interface FilterState {
-  sports: string[] // Changed from sport: string
+  search: string
+  sports: string[]
   minDistance: string
   maxDistance: string
   minElevation: string
@@ -18,6 +19,7 @@ export interface FilterState {
 }
 
 export const DEFAULT_FILTERS: FilterState = {
+  search: "",
   sports: ["All"],
   minDistance: "",
   maxDistance: "",

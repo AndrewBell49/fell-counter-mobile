@@ -9,6 +9,7 @@ export async function getActivities(
     limit = 15,
     sortBy = "startDate",
     sortOrder = "DESC",
+    search,
     sport,
     minDate,
     maxDate,
@@ -30,6 +31,18 @@ export async function getActivities(
   const params: (string | number)[] = []
 
   // Dynamic WHERE filters
+
+  if (search && search.trim()) {
+    whereClauses.push("a.name LIKE ?")
+    params.push(`%${search.trim()}%`)
+
+    // Note: If you also have a description or notes column in `activities`,
+    // you can use this instead:
+    // whereClauses.push("(a.name LIKE ? OR a.notes LIKE ?)")
+    // const term = `%${search.trim()}%`
+    // params.push(term, term)
+  }
+
   if (sport) {
     if (Array.isArray(sport) && sport.length > 0) {
       const placeholders = sport.map(() => "LOWER(?)").join(", ")

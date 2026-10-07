@@ -137,7 +137,6 @@ export function useUpdateActivities() {
       }
 
       try {
-        console.log(fells)
         await database.removeBags(bags.removedItems.map((i) => i.id))
         await database.removeFellClassifications(
           fellClassifications.removedItems,

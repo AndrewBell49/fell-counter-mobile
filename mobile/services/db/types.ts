@@ -114,6 +114,7 @@ export interface IGetActivitiesParams {
     | "sport"
     | "fellsCount"
   sortOrder?: "ASC" | "DESC"
+  search?: string
   sport?: string | string[]
   minDate?: number
   maxDate?: number

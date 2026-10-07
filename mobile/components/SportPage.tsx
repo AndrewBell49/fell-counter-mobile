@@ -2,7 +2,7 @@ import { useCollapsibleHeader } from "@/components/utils/CollapsibleHeaderContex
 import { Divider } from "@/components/utils/Divider"
 import { SportPie } from "@/components/visuals/SportPie"
 import { COLOURS } from "@/constants/colours"
-import { StyleSheet, Text } from "react-native"
+import { StyleSheet } from "react-native"
 import Animated from "react-native-reanimated"
 import { DistanceOverTime } from "./visuals/DistanceOverTime"
 
@@ -18,7 +18,6 @@ export default function SportPage() {
       ]}
       onScroll={scrollHandler}
       scrollEventThrottle={16}>
-      <Text style={styles.text}>View sport data</Text>
       <SportPie />
       <Divider />
       <DistanceOverTime />

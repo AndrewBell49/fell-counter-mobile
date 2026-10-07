@@ -72,6 +72,10 @@ function getSportDescription(sports: string[]): string {
 export function getActivityEmptyMessage(filters: FilterState): string {
   const descriptions: string[] = []
 
+  if (hasValue(filters.search)) {
+    descriptions.push(`matching "${filters.search.trim()}"`)
+  }
+
   const addDistanceDescription = (min: string, max: string) => {
     if (hasValue(min) && hasValue(max)) {
       descriptions.push(
