@@ -102,15 +102,15 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   chipActive: {
-    backgroundColor: COLOURS.primary,
-    borderColor: COLOURS.primary,
+    backgroundColor: COLOURS.pop,
+    borderColor: COLOURS.pop,
   },
   chipText: {
     fontSize: 13,
     color: COLOURS.text,
   },
   chipTextActive: {
-    color: "#fff",
+    color: COLOURS.background,
     fontWeight: "600",
   },
   orderRow: {

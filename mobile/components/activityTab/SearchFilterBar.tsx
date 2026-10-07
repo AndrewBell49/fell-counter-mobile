@@ -76,13 +76,13 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   badge: {
-    backgroundColor: COLOURS.primary,
+    backgroundColor: COLOURS.pop,
     borderRadius: 10,
     paddingHorizontal: 7,
     paddingVertical: 2,
   },
   badgeText: {
-    color: COLOURS.white,
+    color: COLOURS.background,
     fontSize: 11,
     fontWeight: "bold",
   },

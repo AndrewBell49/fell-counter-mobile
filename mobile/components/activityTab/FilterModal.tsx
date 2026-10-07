@@ -279,8 +279,8 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   chipActive: {
-    backgroundColor: COLOURS.primary,
-    borderColor: COLOURS.primary,
+    backgroundColor: COLOURS.pop,
+    borderColor: COLOURS.pop,
   },
   chipText: {
     fontSize: 13,
@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
     textTransform: "capitalize",
   },
   chipTextActive: {
-    color: "#fff",
+    color: COLOURS.background,
     fontWeight: "600",
   },
   modalFooter: {
@@ -310,16 +310,16 @@ const styles = StyleSheet.create({
   },
   applyBtn: {
     flex: 2,
-    backgroundColor: COLOURS.primary,
+    backgroundColor: COLOURS.pop,
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: "center",
   },
   applyBtnText: {
     fontWeight: "bold",
-    color: "#fff",
+    color: COLOURS.background,
   },
   applyBtnDisabled: {
-    backgroundColor: COLOURS.textLight,
+    backgroundColor: COLOURS.text,
   },
 })
