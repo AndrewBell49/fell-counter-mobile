@@ -48,6 +48,10 @@ export async function flushPendingSync(
 
   // Tidy up database on SUCCESS or unrecoverable ERROR (e.g. 400/422 invalid payload)
   // On RETRY (offline / 5xx), keep data in the database
+  // Bags were already deleted locally by removeBag, so on SUCCESS we just
+  // clean up the pending_sync entries. On ERROR, we clean them up too — if
+  // the bag still exists on the server, it will be re-synced during the next
+  // activity sync cycle (server is source of truth).
   if (syncStatus === "SUCCESS" || syncStatus === "ERROR") {
     await db.removePendingSyncByIds(processedIds)
   }

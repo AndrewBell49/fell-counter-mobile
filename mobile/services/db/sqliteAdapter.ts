@@ -6,6 +6,7 @@ import { insertActivities } from "./sqlite/activity/insertActivity"
 import { removeActivities } from "./sqlite/activity/removeActivity"
 import { insertBags } from "./sqlite/bag/insertBag"
 import { removeBags } from "./sqlite/bag/removeBag"
+import { selectBagById } from "./sqlite/bag/selectBagById"
 import { getMaxMinBagDate } from "./sqlite/bag/selectBag"
 import { insertClassifications } from "./sqlite/classification/insertClassification"
 import { removeClassifications } from "./sqlite/classification/removeClassification"
@@ -18,6 +19,7 @@ import {
   type NewPendingSync,
 } from "./sqlite/pendingSync/insertPendingSync"
 import { removePendingSyncByIds } from "./sqlite/pendingSync/removePendingSync"
+import { removePendingSyncByActionAndBagId } from "./sqlite/pendingSync/removePendingSyncByActionAndBagId"
 import { selectPendingSync } from "./sqlite/pendingSync/selectPendingSync"
 import type {
   Activity,
@@ -143,6 +145,15 @@ export class SQLiteAdapter implements DatabaseAdapter {
   selectPendingSync(): Promise<PendingSync[]> {
     return selectPendingSync(this.db)
   }
+  removePendingSyncByActionAndBagId(
+    action: "ADD_BAG" | "REMOVE_BAG",
+    bagId: number,
+  ): Promise<void> {
+    return removePendingSyncByActionAndBagId(this.db, action, bagId)
+  }
+  selectBagById(bagId: number): Promise<Bag | null> {
+    return selectBagById(this.db, bagId)
+  }
 
   // Fell & Activity Info
   getActivities(params?: IGetActivitiesParams): Promise<IActivityListItem[]> {
@@ -156,15 +167,26 @@ export class SQLiteAdapter implements DatabaseAdapter {
   }
 
   async removeBag(bagId: number, request: RequestFn): Promise<void> {
+    const bag = await selectBagById(this.db, bagId)
+    if (!bag) return
+
     await removeBags(this.db, [bagId])
+
     const status = await sendBagUpdates([], [bagId], request)
 
     if (status === "RETRY") {
       await this.insertPendingSync({
         action: "REMOVE_BAG",
-        payload: JSON.stringify({ bagId }),
+        payload: JSON.stringify({
+          bagId,
+          fell_id: bag.fell_id,
+          activity_id: bag.activity_id,
+          bag_date: bag.bag_date,
+        }),
         created_at: Date.now(),
       })
+    } else if (status === "ERROR") {
+      await this.removePendingSyncByActionAndBagId("REMOVE_BAG", bagId)
     }
   }
 }

@@ -67,11 +67,16 @@ export interface DatabaseAdapter {
   insertPendingSync(
     pendingSync: NewPendingSync[] | NewPendingSync,
   ): Promise<void>
-  removePendingSyncByIds(ids: number[]): Promise<void>
-  selectPendingSync(): Promise<PendingSync[]>
+   removePendingSyncByIds(ids: number[]): Promise<void>
+   removePendingSyncByActionAndBagId(
+     action: "ADD_BAG" | "REMOVE_BAG",
+     bagId: number,
+   ): Promise<void>
+   selectPendingSync(): Promise<PendingSync[]>
+   selectBagById(bagId: number): Promise<Bag | null>
 
-  // Fell & Activity Info
-  getActivities(params?: IGetActivitiesParams): Promise<IActivityListItem[]>
+   // Fell & Activity Info
+   getActivities(params?: IGetActivitiesParams): Promise<IActivityListItem[]>
   getFellInfo(fellId: number): Promise<IGetFellInfo | undefined>
   getActivityInfo(activityId: number): Promise<IGetActivityInfo | undefined>
   removeBag(bagId: number, request: RequestFn): Promise<void>

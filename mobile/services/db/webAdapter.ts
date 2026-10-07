@@ -1,17 +1,24 @@
 import { DatabaseAdapter } from "./databaseAdapter"
+import { RequestFn } from "@/hooks/useApi"
+import { NewPendingSync } from "./sqlite/pendingSync/insertPendingSync"
 import type {
   Activity,
   Bag,
   Classification,
   Fell,
   FellClassification,
+  PendingSync,
 } from "./sqlite/schema"
 import type {
+  IActivityListItem,
+  IGetActivitiesParams,
   IGetActivityDistanceInDateOrder,
+  IGetActivityInfo,
   IGetBagCount,
   IGetBagHeightBoxPlot,
   IGetBagsInDateOrder,
   IGetCountryBag,
+  IGetFellInfo,
   IGetFellLocations,
   IGetMaxMinBagDate,
   IGetSportCount,
@@ -62,6 +69,26 @@ export class WebAdapter implements DatabaseAdapter {
   }
   removeBags(bagIds: number[] | number): Promise<void> {
     return Promise.resolve()
+  }
+  insertPendingSync(
+    pendingSync: NewPendingSync[] | NewPendingSync,
+  ): Promise<void> {
+    return Promise.resolve()
+  }
+  removePendingSyncByIds(ids: number[]): Promise<void> {
+    return Promise.resolve()
+  }
+  removePendingSyncByActionAndBagId(
+    action: "ADD_BAG" | "REMOVE_BAG",
+    bagId: number,
+  ): Promise<void> {
+    return Promise.resolve()
+  }
+  selectPendingSync(): Promise<PendingSync[]> {
+    return Promise.resolve([])
+  }
+  selectBagById(bagId: number): Promise<Bag | null> {
+    return Promise.resolve(null)
   }
   getMaxMinBagDate(): Promise<IGetMaxMinBagDate> {
     return Promise.resolve({
@@ -2077,6 +2104,20 @@ export class WebAdapter implements DatabaseAdapter {
         id: 14,
         name: "P600 Peaks",
       },
-    ])
+     ])
+  }
+
+  // Fell & Activity Info
+  removeBag(bagId: number, request: RequestFn): Promise<void> {
+    return Promise.resolve()
+  }
+  getActivities(params?: IGetActivitiesParams): Promise<IActivityListItem[]> {
+    return Promise.resolve([])
+  }
+  getFellInfo(fellId: number): Promise<IGetFellInfo | undefined> {
+    return Promise.resolve(undefined)
+  }
+  getActivityInfo(activityId: number): Promise<IGetActivityInfo | undefined> {
+    return Promise.resolve(undefined)
   }
 }
