@@ -70,6 +70,9 @@ export class WebAdapter implements DatabaseAdapter {
   removeBags(bagIds: number[] | number): Promise<void> {
     return Promise.resolve()
   }
+  removeOrphanedFells(): Promise<void> {
+    return Promise.resolve()
+  }
   insertPendingSync(
     pendingSync: NewPendingSync[] | NewPendingSync,
   ): Promise<void> {
@@ -2104,7 +2107,7 @@ export class WebAdapter implements DatabaseAdapter {
         id: 14,
         name: "P600 Peaks",
       },
-     ])
+    ])
   }
 
   // Fell & Activity Info

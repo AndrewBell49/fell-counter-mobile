@@ -14,6 +14,7 @@ import { insertFellClassifications } from "./sqlite/fellClassification/insertFel
 import { removeFellClassifications } from "./sqlite/fellClassification/removeFellClassification"
 import { insertFells } from "./sqlite/fells/insertFell"
 import { removeFells } from "./sqlite/fells/removeFell"
+import { removeOrphanedFells } from "./sqlite/fells/removeOrphanedFells"
 import {
   insertPendingSync,
   type NewPendingSync,
@@ -94,6 +95,9 @@ export class SQLiteAdapter implements DatabaseAdapter {
   }
   removeBags(bagIds: number[] | number): Promise<void> {
     return removeBags(this.db, bagIds)
+  }
+  removeOrphanedFells(): Promise<void> {
+    return removeOrphanedFells(this.db)
   }
   getMaxMinBagDate(): Promise<IGetMaxMinBagDate> {
     return getMaxMinBagDate(this.db)

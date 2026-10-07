@@ -154,6 +154,7 @@ export function useUpdateActivities() {
         await database.insertActivities(activities.items)
         await database.insertFellClassifications(fellClassifications.items)
         await database.insertBags(bags.items)
+        await database.removeOrphanedFells()
       } catch (err) {
         console.error("SQLite write failed:", err)
         setError("Failed to save local data")
