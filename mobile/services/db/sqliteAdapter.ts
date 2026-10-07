@@ -15,6 +15,8 @@ import { removeFellClassifications } from "./sqlite/fellClassification/removeFel
 import { insertFells } from "./sqlite/fells/insertFell"
 import { removeFells } from "./sqlite/fells/removeFell"
 import { removeOrphanedFells } from "./sqlite/fells/removeOrphanedFells"
+import { applyDelta } from "./sqlite/sync/syncDelta"
+import type { SyncDelta } from "./sqlite/sync/types"
 import {
   insertPendingSync,
   type NewPendingSync,
@@ -98,6 +100,9 @@ export class SQLiteAdapter implements DatabaseAdapter {
   }
   removeOrphanedFells(): Promise<void> {
     return removeOrphanedFells(this.db)
+  }
+  applyDelta(delta: SyncDelta): Promise<void> {
+    return applyDelta(this.db, delta)
   }
   getMaxMinBagDate(): Promise<IGetMaxMinBagDate> {
     return getMaxMinBagDate(this.db)

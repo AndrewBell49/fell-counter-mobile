@@ -1,5 +1,6 @@
 import { RequestFn } from "@/hooks/useApi"
 import { NewPendingSync } from "./sqlite/pendingSync/insertPendingSync"
+import { SyncDelta } from "./sqlite/sync/types"
 import type {
   Activity,
   Bag,
@@ -42,6 +43,7 @@ export interface DatabaseAdapter {
   insertBags(bags: Bag[] | Bag): Promise<void>
   removeBags(bagIds: number[] | number): Promise<void>
   removeOrphanedFells(): Promise<void>
+  applyDelta(delta: SyncDelta): Promise<void>
 
   // Queries
   getMaxMinBagDate(): Promise<IGetMaxMinBagDate>

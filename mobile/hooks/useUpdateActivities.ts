@@ -136,25 +136,23 @@ export function useUpdateActivities() {
         return
       }
 
-      try {
-        await database.removeBags(bags.removedItems.map((i) => i.id))
-        await database.removeFellClassifications(
-          fellClassifications.removedItems,
-        )
-        await database.removeActivities(
-          activities.removedItems.map((i) => i.id),
-        )
-        await database.removeClassifications(
-          classifications.removedItems.map((i) => i.id),
-        )
-        await database.removeFells(fells.removedItems.map((i) => i.id))
+      console.log(fells)
 
-        await database.insertFells(fells.items)
-        await database.insertClassifications(classifications.items)
-        await database.insertActivities(activities.items)
-        await database.insertFellClassifications(fellClassifications.items)
-        await database.insertBags(bags.items)
-        await database.removeOrphanedFells()
+      try {
+        await database.applyDelta({
+          removedBagIds: bags.removedItems.map((i) => i.id),
+          removedFellClassifications: fellClassifications.removedItems,
+          removedActivityIds: activities.removedItems.map((i) => i.id),
+          removedClassificationIds: classifications.removedItems.map(
+            (i) => i.id,
+          ),
+          removedFellIds: fells.removedItems.map((i) => i.id),
+          fells: fells.items,
+          classifications: classifications.items,
+          activities: activities.items,
+          fellClassifications: fellClassifications.items,
+          bags: bags.items,
+        })
       } catch (err) {
         console.error("SQLite write failed:", err)
         setError("Failed to save local data")

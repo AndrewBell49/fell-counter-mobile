@@ -1,6 +1,7 @@
 import { DatabaseAdapter } from "./databaseAdapter"
 import { RequestFn } from "@/hooks/useApi"
 import { NewPendingSync } from "./sqlite/pendingSync/insertPendingSync"
+import { SyncDelta } from "./sqlite/sync/types"
 import type {
   Activity,
   Bag,
@@ -71,6 +72,9 @@ export class WebAdapter implements DatabaseAdapter {
     return Promise.resolve()
   }
   removeOrphanedFells(): Promise<void> {
+    return Promise.resolve()
+  }
+  applyDelta(delta: SyncDelta): Promise<void> {
     return Promise.resolve()
   }
   insertPendingSync(
