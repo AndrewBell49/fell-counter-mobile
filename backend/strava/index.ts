@@ -9,6 +9,7 @@ import { getActivityData } from "./routes/activityData"
 import { getFellData } from "./routes/fellData"
 import { getFellClassificationData } from "./routes/fellClassificationData"
 import { getClassificationData } from "./routes/classificationData"
+import { getSyncBounds } from "./routes/syncBounds"
 import { activeJobs } from "../lib/jobs/activeJobs"
 import { handleUpdateBags } from "./routes/bagFells"
 
@@ -51,6 +52,7 @@ router.get("/update-activities/status", (req, res) => {
   res.json({ status: job?.status ?? "idle" })
 })
 router.get("/user", getUser)
+router.get("/sync-bounds", getSyncBounds)
 router.get("/bag-data/:page", getBagData)
 router.get("/activity-data/:page", getActivityData)
 router.get("/fell-data/:page", getFellData)

@@ -93,7 +93,18 @@ export function useUpdateActivities() {
       const lastUpdated = lastUpdatedItem
         ? new Date(parseInt(lastUpdatedItem))
         : null
-      const currentDate = new Date()
+
+      let currentDate: Date
+      try {
+        const bounds = await request<{ upperBound: number }>({
+          url: `${SERVER_URL}/strava/sync-bounds`,
+          retries: 1,
+        })
+        currentDate = new Date(bounds.upperBound)
+      } catch {
+        handleOfflineFallback()
+        return
+      }
 
       let fells, classifications, fellClassifications, activities, bags
       try {
@@ -126,6 +137,7 @@ export function useUpdateActivities() {
       }
 
       try {
+        console.log(fells)
         await database.removeBags(bags.removedItems.map((i) => i.id))
         await database.removeFellClassifications(
           fellClassifications.removedItems,
