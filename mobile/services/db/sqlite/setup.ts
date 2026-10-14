@@ -30,12 +30,16 @@ export async function setupDatabase(): Promise<SQLite.SQLiteDatabase> {
     CREATE TABLE IF NOT EXISTS activities (
       id INTEGER NOT NULL PRIMARY KEY,
       name TEXT NOT NULL,
+      description TEXT,
       distance REAL,
       elapsed_time INTEGER,
       moving_time INTEGER,
       elevation REAL,
       sport TEXT,
-      start_date INTEGER NOT NULL
+      start_date INTEGER NOT NULL,
+      average_speed: REAL,
+      max_speed: REAL,
+      summary_polyline: TEXT
     );
 
     CREATE TABLE IF NOT EXISTS bags (

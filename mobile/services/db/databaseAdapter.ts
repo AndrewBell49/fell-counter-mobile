@@ -21,6 +21,7 @@ import type {
   IGetFellInfo,
   IGetFellLocations,
   IGetMaxMinBagDate,
+  IGetPopularFells,
   IGetSportCount,
 } from "./types"
 
@@ -53,6 +54,7 @@ export interface DatabaseAdapter {
   getBagHeightBoxPlot(): Promise<IGetBagHeightBoxPlot>
   getBagsInDateOrder(): Promise<IGetBagsInDateOrder[]>
   getBagsByCountry(): Promise<IGetCountryBag[]>
+  getPopularFells(count: number): Promise<IGetPopularFells[]>
 
   // Sport Visuals
   getSportCounts(): Promise<IGetSportCount[]>

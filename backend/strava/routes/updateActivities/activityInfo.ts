@@ -34,50 +34,62 @@ export async function saveAndGetActivityInfo(user: User) {
 
   while (dataGot) {
     const response = await axios.get(
-      "https://www.strava.com/api/v3/activities",
+      "https://www.strava.com/api/v3/athlete/activities",
       {
-        params: { ...params, page: page },
+        params: { ...params, page },
         headers: { Authorization: `Bearer ${accessToken}` },
       },
     )
 
-    response.data.forEach(
-      async (data: {
-        id: any
-        name: any
-        distance: any
-        moving_time: any
-        elapsed_time: any
-        total_elevation_gain: any
-        sport_type: any
-        start_date: string | number | Date
-        start_latlng: any[]
-      }) => {
-        const activity: NewActivity = {
-          id: data.id,
-          user_id: user.id,
-          name: data.name,
-          distance: data.distance,
-          moving_time: data.moving_time,
-          elapsed_time: data.elapsed_time,
-          elevation: data.total_elevation_gain,
-          sport: data.sport_type,
-          start_date: new Date(data.start_date),
-          start_lat: data.start_latlng[0],
-          start_long: data.start_latlng[1],
-        }
-        console.log(`Inserting activity: ${data.name}`)
-        const insertedActivities = await insertActivity(activity)
-        activityIds.push(...insertedActivities)
-      },
-    )
+    const activities = response.data
 
-    if (response.data.length == 0) {
+    if (!activities || activities.length === 0) {
       dataGot = false
-      console.log("All activities got")
+      console.log("All activities retrieved")
+      break
+    }
+
+    for (const data of activities) {
+      let description: string | null = null
+
+      try {
+        const detailRes = await axios.get(
+          `https://www.strava.com/api/v3/activities/${data.id}`,
+          { headers: { Authorization: `Bearer ${accessToken}` } },
+        )
+        description = detailRes.data.description || null
+      } catch (err) {
+        console.warn(`Could not fetch detail for activity ${data.id}`)
+      }
+
+      const activity: NewActivity = {
+        id: data.id,
+        user_id: user.id,
+        name: data.name,
+        distance: data.distance,
+        moving_time: data.moving_time,
+        elapsed_time: data.elapsed_time,
+        elevation: data.total_elevation_gain,
+        sport: data.sport_type || data.type,
+        start_date: new Date(data.start_date),
+        start_lat: data.start_latlng?.[0] ?? null,
+        start_long: data.start_latlng?.[1] ?? null,
+
+        average_speed: data.average_speed,
+        max_speed: data.max_speed,
+        summary_polyline: data.map?.summary_polyline ?? null,
+        description: description,
+      }
+
+      console.log(`Inserting activity: ${data.name}`)
+      const insertedActivities = await insertActivity(activity)
+      if (insertedActivities) {
+        activityIds.push(...insertedActivities)
+      }
     }
 
     page++
   }
+
   return { activityIds, fullRefresh }
 }

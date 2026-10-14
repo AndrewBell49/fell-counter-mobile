@@ -21,12 +21,16 @@ export interface FellClassification {
 export interface Activity {
   id: number
   name: string
+  description: string
   distance: number | null
   elapsed_time: number | null
   moving_time: number | null
   elevation: number | null
   sport: string | null
   start_date: number
+  average_speed: number
+  max_speed: number
+  summary_polyline: string
 }
 
 export interface Bag {

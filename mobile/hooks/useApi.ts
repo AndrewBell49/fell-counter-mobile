@@ -39,11 +39,10 @@ export function useApi() {
       } catch (err) {
         if (err instanceof ApiError) throw err
         lastError = new ApiError(0, getError(err).message) // network/unknown error
-        console.log(lastError.message)
       }
       if (i < RETRIES) {
         await sleep(
-          Math.min(MAX_SLEEP, 1000 * Math.pow(2, i)) + 1000 * Math.random(),
+          Math.min(MAX_SLEEP, 100 * Math.pow(2, i)) + 100 * Math.random(),
         )
       }
     }

@@ -6,6 +6,7 @@ import { IGetActivityInfo } from "@/services/db/types"
 import { Ionicons } from "@expo/vector-icons"
 import React from "react"
 import { Linking, Platform, Pressable, StyleSheet, View } from "react-native"
+import { MiniRouteMap } from "../maps/MiniRouteMap"
 
 function formatDuration(seconds: number): string {
   const h = Math.floor(seconds / 3600)
@@ -62,6 +63,8 @@ export default function ActivityOverview({
       {/* Title & Sport Badge */}
       <View style={styles.headerRow}>
         <Text style={styles.title}>{activityInfo.title}</Text>
+
+        <MiniRouteMap summaryPolyline='s_dmI``sQ|Ir^vF`AlLwKrLcIzLyBtItAjIqD`IrBnGiHnF`DvCcExHc@`K|E~N`YfFtAde@[jH}EzTaBjXdOde@~MxFhP|QbS|e@rWnVhSfo@{M~J{[hOoIbIp@vEvLdIpBn]wSta@mEp~@ci@pHyKrFiUpEqGtRzF`SoE|BdT~Uvo@bF|`@zHlIhFnRxKnYfDtBh@kDlBz@zUzo@jHuF`GiUnE|ObC}i@U_[uDqc@dCmk@lLyMjIfMpChPdMlRk@xRxJmNoEaHnG_]_@q_@yQg{@jEeRzH_FtSeB|FbQz@hWdDpNzElKzYjXnOgWdKoc@tHqJ~CcTxKxLu@y^mEmOnQvKvg@vKxXoHfU{Z|DeTvI{TxDcRzb@tW~EwDpJqUpQ_H`EXpHfKv_@iOve@oAvd@jm@`QiHpp@|LvGcHzLgj@xTcFjo@pCtCjCtJeB`H_JjOzBlMuYxAwRhDoIdCvD~DiK|BhF`@_BfD`CdBkLeCiOzGt@`TpU~D`@iGo`@xC{XoBcFpAsXlGaI{@wr@lOsSjDmRhMwEdEyF`Qcc@rTiFl]fKnk@aFt~@xCrNkCvEgHzB`C`EeGbRR|ZoB|GmIbFGdOvKrAkE`FfKHuDvBrA|KiGnKXdNkFdI|@bDfCpD|Oo@_CmD~_@r[dAlBeAp@yHxCf@|HjOnCrZdJxE`AtLpJpOd]~G~JZjEpGjD~O|ALhFwE}AmUzAiJtSm[jHrD~Ko@nEqQnFcIIiTfLqB|OlBdRoWxG~KpJ`@fD`EpDmAhCuGdDo@`DwQdJoJrF}S`GwF|Et@|H`JfFKzNp[fWjKlErFtGWrGqJ`IkAp[|PxWuNpSkc@vHiIzS~@tQkE|IsOtSgNbA_TrTxD`JqFpBkIfQlHxC_NdC?~LpY`AhI|`@jYvFtJlBy@`N~^~AyDhWyA`ByIbCgAfGjGpCYp@oFxFc@~DvDvHwBvE`GdJcCxChBxAzMxS`K`FvPjJzElFhXfFzHjExYnGdItI_FvNie@~U{BDsDpEiCjCoHlD_UnDjB|DwJpBvBfHmBxFjXtKpDb@bD_DlCxJfBbHcFN{CrEShCjDlFkK`KjBvSlNvIbPvGWhWzMjGzJx@rJ|MnIdM`Ub`@rIrRlHtK`RxFWbLpInDeA`BkJtGb@xD}ChFiOt@{JhApB`R_MfTmBjHuErDwOhD^r@uJdFqMfHeN|@kRnIkR}@sM{FoLzAyJ|FwGpJmC~[eCdXsVnR|@b@iLpDcC`A_NvFfA' />
 
         {/* Updated Sport Badge with Strava-style Icon */}
         <View style={styles.sportBadge}>

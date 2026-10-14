@@ -4,6 +4,7 @@ import { Text } from "@/components/utils/Text"
 import { BagsOverTime } from "@/components/visuals/BagsOverTime"
 import { CountryPie } from "@/components/visuals/CountryPie"
 import { FellHeightBoxPlot } from "@/components/visuals/FellHeightBoxPlot"
+import { PopularFells } from "@/components/visuals/PopularFells"
 import { COLOURS } from "@/constants/colours"
 import { UserContext } from "@/context/UserContext"
 import { useContext } from "react"
@@ -29,6 +30,8 @@ export default function BagsScreen() {
       <CountryPie />
       <Divider />
       <BagsOverTime />
+      <Divider />
+      <PopularFells />
     </Animated.ScrollView>
   )
 }

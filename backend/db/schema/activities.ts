@@ -18,6 +18,7 @@ export const activities = pgTable("activities", {
     .notNull()
     .references(() => users.id),
   name: text().notNull(),
+  description: text(),
   distance: real(),
   elapsed_time: integer(),
   moving_time: integer(),
@@ -26,6 +27,9 @@ export const activities = pgTable("activities", {
   start_date: timestamp().notNull(),
   start_lat: real(),
   start_long: real(),
+  average_speed: real(),
+  max_speed: real(),
+  summary_polyline: text(),
   checked_date: timestamp(),
   updated_at: timestamp().notNull().defaultNow(),
   active: boolean().notNull().default(true),

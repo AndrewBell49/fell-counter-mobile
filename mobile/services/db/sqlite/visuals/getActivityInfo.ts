@@ -13,14 +13,18 @@ export async function getActivityInfo(
     db.getFirstAsync<{
       id: number
       title: string
+      description: string
       sport: string
       distance: number
       moving_time: number
       elapsed_time: number
       elevation_gain: number
       start_date: number
+      average_speed: number
+      max_speed: number
+      summary_polyline: string
     }>(
-      `SELECT id, name AS title, sport, distance, moving_time, elapsed_time, elevation AS elevation_gain, start_date 
+      `SELECT id, name AS title, description, sport, distance, moving_time, elapsed_time, elevation AS elevation_gain, start_date, average_speed, max_speed, summary_polyline
        FROM activities 
        WHERE id = ?`,
       [activityId],
@@ -64,12 +68,16 @@ export async function getActivityInfo(
   return {
     id: activity.id,
     title: activity.title,
+    description: activity.description,
     sport: activity.sport,
     distance: activity.distance,
     movingTime: activity.moving_time,
     elapsedTime: activity.elapsed_time,
     elevationGain: activity.elevation_gain,
     startDate: activity.start_date,
+    averageSpeed: activity.average_speed,
+    maxSpeed: activity.max_speed,
+    summaryPolyline: activity.summary_polyline,
     baggedFells,
   }
 }

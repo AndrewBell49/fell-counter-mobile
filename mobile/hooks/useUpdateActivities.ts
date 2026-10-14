@@ -136,8 +136,6 @@ export function useUpdateActivities() {
         return
       }
 
-      console.log(fells)
-
       try {
         await database.applyDelta({
           removedBagIds: bags.removedItems.map((i) => i.id),

@@ -5,7 +5,6 @@ import { User } from "../../../db/schema/users"
 import { deactivateBags } from "../../../db/operations/bags/updateBag"
 
 export async function handleUpdateBags(req: Request, res: Response) {
-  console.log(req.body)
   const user: User = res.locals.user
 
   const addBags = getBagListFromBody(req, res, "addBags")

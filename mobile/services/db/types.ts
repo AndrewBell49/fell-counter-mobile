@@ -37,6 +37,13 @@ export interface IGetFellLocations {
   bagDates: string[]
 }
 
+export interface IGetPopularFells {
+  id: number
+  name: string
+  elevation: number
+  count: number
+}
+
 export interface IGetSportCount {
   sport: string
   count: number
@@ -82,12 +89,16 @@ export interface IActivityBaggedFell {
 export interface IGetActivityInfo {
   id: number
   title: string
+  description: string
   sport: string
   distance: number
   movingTime: number
   elapsedTime: number
   elevationGain: number
   startDate: number
+  averageSpeed: number
+  maxSpeed: number
+  summaryPolyline: string
   baggedFells: IActivityBaggedFell[]
 }
 

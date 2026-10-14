@@ -1,4 +1,4 @@
-import { RequestFn } from "@/hooks/useApi"
+﻿import { RequestFn } from "@/hooks/useApi"
 import { SQLiteDatabase } from "expo-sqlite"
 import { sendBagUpdates } from "../strava/updateBags"
 import { DatabaseAdapter } from "./databaseAdapter"
@@ -55,8 +55,10 @@ import type {
   IGetFellInfo,
   IGetFellLocations,
   IGetMaxMinBagDate,
+  IGetPopularFells,
   IGetSportCount,
 } from "./types"
+import { getPopularFells } from "./sqlite/visuals/getPopularFells"
 
 export class SQLiteAdapter implements DatabaseAdapter {
   constructor(private db: SQLiteDatabase) {}
@@ -120,6 +122,9 @@ export class SQLiteAdapter implements DatabaseAdapter {
   }
   getBagsByCountry(): Promise<IGetCountryBag[]> {
     return getBagsByCountry(this.db)
+  }
+  getPopularFells(count: number): Promise<IGetPopularFells[]> {
+    return getPopularFells(this.db, count)
   }
 
   // Sport Visuals
