@@ -1,3 +1,4 @@
+import { deleteItem } from "@/services/storage/storage"
 import * as SQLite from "expo-sqlite"
 import type { DB_TYPE } from "./constants"
 import { DB_NAME } from "./constants"
@@ -37,9 +38,9 @@ export async function setupDatabase(): Promise<SQLite.SQLiteDatabase> {
       elevation REAL,
       sport TEXT,
       start_date INTEGER NOT NULL,
-      average_speed: REAL,
-      max_speed: REAL,
-      summary_polyline: TEXT
+      average_speed REAL,
+      max_speed REAL,
+      summary_polyline TEXT
     );
 
     CREATE TABLE IF NOT EXISTS bags (
@@ -66,5 +67,6 @@ export function requireDb(db: DB_TYPE): asserts db is NonNullable<DB_TYPE> {
 
 export async function resetDatabase(): Promise<void> {
   await SQLite.deleteDatabaseAsync(DB_NAME)
+  await deleteItem("lastUpdated")
   console.log("Reset Database")
 }

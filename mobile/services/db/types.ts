@@ -83,22 +83,24 @@ export interface IActivityBaggedFell {
   fellId: number
   fellName: string
   elevation: number
+  latitude: number
+  longitude: number
   bagOccurrence: number
 }
 
 export interface IGetActivityInfo {
   id: number
   title: string
-  description: string
+  description?: string
   sport: string
   distance: number
   movingTime: number
   elapsedTime: number
   elevationGain: number
   startDate: number
-  averageSpeed: number
-  maxSpeed: number
-  summaryPolyline: string
+  averageSpeed?: number
+  maxSpeed?: number
+  summaryPolyline?: string
   baggedFells: IActivityBaggedFell[]
 }
 
@@ -112,6 +114,7 @@ export interface IActivityListItem {
   sport: string
   startDate: number
   fellsCount: number
+  summaryPolyline?: string
 }
 
 export interface IGetActivitiesParams {

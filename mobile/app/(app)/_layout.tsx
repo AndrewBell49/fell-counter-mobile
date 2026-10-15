@@ -21,6 +21,7 @@ export default function AppLayout() {
 
   if (!isReady) {
     if (error) {
+      console.error(error)
       return (
         <View style={styles.errorContainer}>
           <Text style={styles.errorTitle}>

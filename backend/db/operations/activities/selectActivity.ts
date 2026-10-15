@@ -79,16 +79,16 @@ export async function getAllInactiveActivities(
     .select({
       id: inactiveActivities.id,
       name: inactiveActivities.name,
-      description: activeActivities.description,
+      description: inactiveActivities.description,
       distance: inactiveActivities.distance,
       elapsed_time: inactiveActivities.elapsed_time,
       elevation: inactiveActivities.elevation,
       sport: inactiveActivities.sport,
       moving_time: inactiveActivities.moving_time,
       start_date: inactiveActivities.start_date,
-      average_speed: activeActivities.average_speed,
-      max_speed: activeActivities.max_speed,
-      summary_polyline: activeActivities.summary_polyline,
+      average_speed: inactiveActivities.average_speed,
+      max_speed: inactiveActivities.max_speed,
+      summary_polyline: inactiveActivities.summary_polyline,
     })
     .from(inactiveActivities)
     .where(
@@ -121,12 +121,11 @@ export async function getAllUncheckedActivities(
   return result
 }
 
-export async function getActivityById(activityId: number) {
+export async function getNullDescriptionActivity() {
   const result = await db
     .select()
     .from(activeActivities)
-    .where(eq(activeActivities.id, activityId))
-    .limit(1)
+    .where(isNull(activeActivities.description))
 
-  return result[0] || null
+  return result
 }

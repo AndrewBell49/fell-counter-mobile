@@ -46,7 +46,7 @@ export async function saveAndGetActivityInfo(user: User) {
     if (!activities || activities.length === 0) {
       dataGot = false
       console.log("All activities retrieved")
-      break
+      return { activityIds, fullRefresh }
     }
 
     for (const data of activities) {
@@ -59,7 +59,10 @@ export async function saveAndGetActivityInfo(user: User) {
         )
         description = detailRes.data.description || null
       } catch (err) {
-        console.warn(`Could not fetch detail for activity ${data.id}`)
+        console.warn(
+          `Could not fetch detail for activity ${data.id}. Not inserting`,
+        )
+        return { activityIds, fullRefresh }
       }
 
       const activity: NewActivity = {

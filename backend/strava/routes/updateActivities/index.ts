@@ -5,7 +5,6 @@ import { getError } from "../../../lib/errors/errorMessage"
 import { User } from "../../../db/schema/users"
 import { activeJobs } from "../../../lib/jobs/activeJobs"
 import { updateUser } from "../../../db/operations/users/updateUser"
-import { saveAndGetActivityInfoWithCutoff } from "./tempActivityInfo"
 
 const BATCH_DOWNLOAD = 10
 

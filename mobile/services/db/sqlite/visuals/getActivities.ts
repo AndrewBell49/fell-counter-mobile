@@ -123,7 +123,8 @@ export async function getActivities(
       COALESCE(a.elevation, 0) AS elevationGain,
       COALESCE(a.sport, 'run') AS sport,
       a.start_date AS startDate,
-      COUNT(b.id) AS fellsCount
+      COUNT(b.id) AS fellsCount,
+      a.summary_polyline AS summaryPolyline
     FROM activities a
     LEFT JOIN bags b ON a.id = b.activity_id
     ${whereSql}

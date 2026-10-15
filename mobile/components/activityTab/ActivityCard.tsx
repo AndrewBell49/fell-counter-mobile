@@ -6,6 +6,7 @@ import { Ionicons } from "@expo/vector-icons"
 import { router } from "expo-router"
 import React from "react"
 import { Pressable, StyleSheet, View } from "react-native"
+import { RouteOutline } from "../maps/RouteOutline"
 import { formatDate, formatDuration } from "./utils"
 
 interface ActivityCardProps {
@@ -25,53 +26,76 @@ export const ActivityCard = React.memo(({ item }: ActivityCardProps) => {
           params: { id: item.id },
         })
       }>
-      <View style={styles.cardHeader}>
-        <Text style={styles.cardTitle} numberOfLines={1}>
-          {item.title}
-        </Text>
-        <View style={styles.sportBadge}>
-          <SportIcon sport={item.sport} size={12} color={COLOURS.primary} />
-          <Text style={styles.sportText}>{item.sport}</Text>
+      <View style={styles.cardContent}>
+        {/* Left Column: Main Information */}
+        <View style={styles.leftCol}>
+          <Text style={styles.cardTitle} numberOfLines={1}>
+            {item.title}
+          </Text>
+
+          <Text style={styles.dateText}>{formatDate(item.startDate)}</Text>
+
+          <View style={styles.statRow}>
+            <View style={styles.statItem}>
+              <Ionicons
+                name='map-outline'
+                size={12}
+                color={COLOURS.textLight}
+              />
+              <Text style={styles.statText}>{distanceKm} km</Text>
+            </View>
+
+            <View style={styles.statItem}>
+              <Ionicons
+                name='time-outline'
+                size={12}
+                color={COLOURS.textLight}
+              />
+              <Text style={styles.statText}>
+                {formatDuration(item.movingTime)}
+              </Text>
+            </View>
+
+            <View style={styles.statItem}>
+              <Ionicons
+                name='trending-up-outline'
+                size={12}
+                color={COLOURS.textLight}
+              />
+              <Text style={styles.statText}>{item.elevationGain}m</Text>
+            </View>
+          </View>
         </View>
-      </View>
 
-      <Text style={styles.dateText}>{formatDate(item.startDate)}</Text>
+        {/* Middle Column: Route Outline */}
+        <View style={styles.outlineCol}>
+          <RouteOutline
+            summaryPolyline={item.summaryPolyline}
+            height={46}
+            aspectRatio={1}
+            strokeWidth={2.5}
+          />
+        </View>
 
-      <View style={styles.cardBody}>
-        <View style={styles.statRow}>
-          <View style={styles.statItem}>
-            <Ionicons name='map-outline' size={14} color={COLOURS.textLight} />
-            <Text style={styles.statText}>{distanceKm} km</Text>
+        {/* Right Column: Sport Badge & Fells Bagged */}
+        <View style={styles.rightCol}>
+          <View style={styles.sportBadge}>
+            <SportIcon sport={item.sport} size={12} color={COLOURS.primary} />
+            <Text style={styles.sportText}>{item.sport}</Text>
           </View>
 
-          <View style={styles.statItem}>
-            <Ionicons name='time-outline' size={14} color={COLOURS.textLight} />
-            <Text style={styles.statText}>
-              {formatDuration(item.movingTime)}
+          <View style={styles.fellBadge}>
+            <Ionicons name='triangle' size={11} color={COLOURS.graph} />
+            <Text style={styles.fellBadgeText}>
+              {fellsCount} {fellsCount === 1 ? "fell" : "fells"}
             </Text>
           </View>
-
-          <View style={styles.statItem}>
-            <Ionicons
-              name='trending-up-outline'
-              size={14}
-              color={COLOURS.textLight}
-            />
-            <Text style={styles.statText}>{item.elevationGain}m</Text>
-          </View>
-        </View>
-
-        <View style={styles.fellBadge}>
-          <Ionicons name='triangle' size={12} color={COLOURS.graph} />
-          <Text style={styles.fellBadgeText}>
-            {fellsCount} {fellsCount === 1 ? "fell" : "fells"} bagged
-          </Text>
         </View>
       </View>
 
       <Ionicons
         name='chevron-forward'
-        size={18}
+        size={16}
         color={COLOURS.textLight}
         style={styles.chevron}
       />
@@ -85,7 +109,9 @@ const styles = StyleSheet.create({
     borderColor: COLOURS.border,
     borderWidth: 1,
     borderRadius: 12,
-    padding: 14,
+    paddingVertical: 12,
+    paddingLeft: 12,
+    paddingRight: 28,
     marginBottom: 12,
     position: "relative",
     shadowColor: COLOURS.shadow,
@@ -97,19 +123,52 @@ const styles = StyleSheet.create({
   cardPressed: {
     opacity: 0.7,
   },
-  cardHeader: {
+  cardContent: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingRight: 20,
-    marginBottom: 4,
+  },
+  leftCol: {
+    flex: 1,
+    marginRight: 6,
   },
   cardTitle: {
-    fontSize: 17,
+    fontSize: 15,
     fontWeight: "700",
     color: COLOURS.text,
-    flex: 1,
-    marginRight: 8,
+    marginBottom: 2,
+  },
+  dateText: {
+    fontSize: 12,
+    color: COLOURS.textLight,
+    marginBottom: 6,
+  },
+  statRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    flexWrap: "wrap",
+  },
+  statItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+  },
+  statText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: COLOURS.text,
+  },
+  outlineCol: {
+    width: 48,
+    height: 48,
+    alignItems: "center",
+    justifyContent: "center",
+    marginHorizontal: 6,
+  },
+  rightCol: {
+    alignItems: "flex-end",
+    gap: 6,
   },
   sportBadge: {
     flexDirection: "row",
@@ -128,49 +187,24 @@ const styles = StyleSheet.create({
     color: COLOURS.primary,
     textTransform: "capitalize",
   },
-  dateText: {
-    fontSize: 13,
-    color: COLOURS.textLight,
-    marginBottom: 12,
-  },
-  cardBody: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 8,
-  },
-  statRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  statItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  statText: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: COLOURS.text,
-  },
   fellBadge: {
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
     backgroundColor: COLOURS.background,
     paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingVertical: 3,
     borderRadius: 8,
   },
   fellBadgeText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: "600",
     color: COLOURS.text,
   },
   chevron: {
     position: "absolute",
-    right: 12,
-    top: 16,
+    right: 8,
+    top: "50%",
+    marginTop: -8,
   },
 })

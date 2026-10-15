@@ -36,8 +36,10 @@ export async function getActivityInfo(
       fell_id: number
       fell_name: string
       elevation: number
+      latitude: number
+      longitude: number
     }>(
-      `SELECT b.id AS bag_id, f.id AS fell_id, f.name AS fell_name, f.elevation
+      `SELECT b.id AS bag_id, f.id AS fell_id, f.name AS fell_name, f.elevation, f.latitude, f.longitude
        FROM bags b
        INNER JOIN fells f ON b.fell_id = f.id
        WHERE b.activity_id = ?
@@ -61,6 +63,8 @@ export async function getActivityInfo(
       fellId: row.fell_id,
       fellName: row.fell_name,
       elevation: row.elevation,
+      latitude: row.latitude,
+      longitude: row.longitude,
       bagOccurrence: fellCounts[row.fell_id],
     }
   })
