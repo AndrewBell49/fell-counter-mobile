@@ -1,8 +1,12 @@
 import { COLOURS } from "@/constants/colours"
-import { StyleSheet, View } from "react-native"
+import { StyleProp, StyleSheet, View, ViewStyle } from "react-native"
 
-export function Divider() {
-  return <View style={sheet.divider} />
+interface DividerProps {
+  style?: StyleProp<ViewStyle>
+}
+
+export function Divider({ style }: DividerProps) {
+  return <View style={[sheet.divider, style]} />
 }
 
 const sheet = StyleSheet.create({

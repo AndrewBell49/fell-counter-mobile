@@ -5,6 +5,7 @@ import { BagsOverTime } from "@/components/visuals/BagsOverTime"
 import { CountryPie } from "@/components/visuals/CountryPie"
 import { FellHeightBoxPlot } from "@/components/visuals/FellHeightBoxPlot"
 import { PopularFells } from "@/components/visuals/PopularFells"
+import { RecentActivity } from "@/components/visuals/RecentActivity"
 import { COLOURS } from "@/constants/colours"
 import { UserContext } from "@/context/UserContext"
 import { useContext } from "react"
@@ -25,13 +26,15 @@ export default function BagsScreen() {
       onScroll={scrollHandler}
       scrollEventThrottle={16}>
       <Text style={styles.text}>Welcome, {user?.name}</Text>
-      <FellHeightBoxPlot />
+      <RecentActivity />
       <Divider />
       <CountryPie />
       <Divider />
       <BagsOverTime />
       <Divider />
       <PopularFells />
+      <Divider />
+      <FellHeightBoxPlot />
     </Animated.ScrollView>
   )
 }
@@ -48,7 +51,6 @@ const styles = StyleSheet.create({
   },
   text: {
     display: "flex",
-    marginBottom: 10,
     fontWeight: "bold",
     fontSize: 28,
   },

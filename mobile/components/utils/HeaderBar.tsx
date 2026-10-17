@@ -3,10 +3,13 @@ import { COLOURS } from "@/constants/colours"
 import { Ionicons } from "@expo/vector-icons"
 import { router } from "expo-router"
 import { Pressable, StyleSheet, View } from "react-native"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
 
 export default function HeaderBar({ text }: { text: string }) {
+  const insets = useSafeAreaInsets()
+
   return (
-    <View style={styles.header}>
+    <View style={[styles.header, { paddingTop: insets.top + 14 }]}>
       <Pressable
         onPress={() => router.back()}
         style={styles.backButton}
@@ -25,8 +28,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingVertical: 14,
-    backgroundColor: COLOURS.card,
+    paddingBottom: 14,
+    backgroundColor: COLOURS.cardSecondary,
 
     borderBottomWidth: 1,
     borderBottomColor: COLOURS.border,

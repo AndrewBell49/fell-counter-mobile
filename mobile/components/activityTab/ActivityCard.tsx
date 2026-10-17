@@ -11,108 +11,113 @@ import { formatDate, formatDuration } from "./utils"
 
 interface ActivityCardProps {
   item: IActivityListItem
+  backgroundColour: string
 }
 
-export const ActivityCard = React.memo(({ item }: ActivityCardProps) => {
-  const distanceKm = (item.distance / 1000).toFixed(2)
-  const fellsCount = item.fellsCount ?? 0
+export const ActivityCard = React.memo(
+  ({ item, backgroundColour }: ActivityCardProps) => {
+    const distanceKm = (item.distance / 1000).toFixed(2)
+    const fellsCount = item.fellsCount ?? 0
 
-  return (
-    <Pressable
-      style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
-      onPress={() =>
-        router.push({
-          pathname: "/activities/[id]",
-          params: { id: item.id },
-        })
-      }>
-      <View style={styles.cardContent}>
-        {/* Left Column: Main Information */}
-        <View style={styles.leftCol}>
-          <Text style={styles.cardTitle} numberOfLines={1}>
-            {item.title}
-          </Text>
+    return (
+      <Pressable
+        style={({ pressed }) => [
+          styles.card,
+          { backgroundColor: backgroundColour },
+          pressed && styles.cardPressed,
+        ]}
+        onPress={() =>
+          router.push({
+            pathname: "/activities/[id]",
+            params: { id: item.id },
+          })
+        }>
+        <View style={styles.cardContent}>
+          {/* Left Column: Main Information */}
+          <View style={styles.leftCol}>
+            <Text style={styles.cardTitle} numberOfLines={1}>
+              {item.title}
+            </Text>
 
-          <Text style={styles.dateText}>{formatDate(item.startDate)}</Text>
+            <Text style={styles.dateText}>{formatDate(item.startDate)}</Text>
 
-          <View style={styles.statRow}>
-            <View style={styles.statItem}>
-              <Ionicons
-                name='map-outline'
-                size={12}
-                color={COLOURS.textLight}
-              />
-              <Text style={styles.statText}>{distanceKm} km</Text>
+            <View style={styles.statRow}>
+              <View style={styles.statItem}>
+                <Ionicons
+                  name='map-outline'
+                  size={12}
+                  color={COLOURS.textLight}
+                />
+                <Text style={styles.statText}>{distanceKm} km</Text>
+              </View>
+
+              <View style={styles.statItem}>
+                <Ionicons
+                  name='time-outline'
+                  size={12}
+                  color={COLOURS.textLight}
+                />
+                <Text style={styles.statText}>
+                  {formatDuration(item.movingTime)}
+                </Text>
+              </View>
+
+              <View style={styles.statItem}>
+                <Ionicons
+                  name='trending-up-outline'
+                  size={12}
+                  color={COLOURS.textLight}
+                />
+                <Text style={styles.statText}>{item.elevationGain}m</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Middle Column: Route Outline */}
+          <View style={styles.outlineCol}>
+            <RouteOutline
+              summaryPolyline={item.summaryPolyline}
+              height={46}
+              aspectRatio={1}
+              strokeWidth={2.5}
+            />
+          </View>
+
+          {/* Right Column: Sport Badge & Fells Bagged */}
+          <View style={styles.rightCol}>
+            <View style={styles.sportBadge}>
+              <SportIcon sport={item.sport} size={12} color={COLOURS.primary} />
+              <Text style={styles.sportText}>{item.sport}</Text>
             </View>
 
-            <View style={styles.statItem}>
-              <Ionicons
-                name='time-outline'
-                size={12}
-                color={COLOURS.textLight}
-              />
-              <Text style={styles.statText}>
-                {formatDuration(item.movingTime)}
+            <View style={styles.fellBadge}>
+              <Ionicons name='triangle' size={11} color={COLOURS.pop} />
+              <Text style={styles.fellBadgeText}>
+                {fellsCount} {fellsCount === 1 ? "fell" : "fells"}
               </Text>
             </View>
-
-            <View style={styles.statItem}>
-              <Ionicons
-                name='trending-up-outline'
-                size={12}
-                color={COLOURS.textLight}
-              />
-              <Text style={styles.statText}>{item.elevationGain}m</Text>
-            </View>
           </View>
         </View>
 
-        {/* Middle Column: Route Outline */}
-        <View style={styles.outlineCol}>
-          <RouteOutline
-            summaryPolyline={item.summaryPolyline}
-            height={46}
-            aspectRatio={1}
-            strokeWidth={2.5}
-          />
-        </View>
-
-        {/* Right Column: Sport Badge & Fells Bagged */}
-        <View style={styles.rightCol}>
-          <View style={styles.sportBadge}>
-            <SportIcon sport={item.sport} size={12} color={COLOURS.primary} />
-            <Text style={styles.sportText}>{item.sport}</Text>
-          </View>
-
-          <View style={styles.fellBadge}>
-            <Ionicons name='triangle' size={11} color={COLOURS.graph} />
-            <Text style={styles.fellBadgeText}>
-              {fellsCount} {fellsCount === 1 ? "fell" : "fells"}
-            </Text>
-          </View>
-        </View>
-      </View>
-
-      <Ionicons
-        name='chevron-forward'
-        size={16}
-        color={COLOURS.textLight}
-        style={styles.chevron}
-      />
-    </Pressable>
-  )
-})
+        <Ionicons
+          name='chevron-forward'
+          size={16}
+          color={COLOURS.textLight}
+          style={styles.chevron}
+        />
+      </Pressable>
+    )
+  },
+)
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: COLOURS.card,
     borderColor: COLOURS.border,
     borderWidth: 1,
     borderRadius: 12,
     paddingVertical: 12,
     paddingLeft: 12,
     paddingRight: 28,
-    marginBottom: 12,
     position: "relative",
     shadowColor: COLOURS.shadow,
     shadowOffset: { width: 0, height: 1 },

@@ -6,8 +6,8 @@ import { insertActivities } from "./sqlite/activity/insertActivity"
 import { removeActivities } from "./sqlite/activity/removeActivity"
 import { insertBags } from "./sqlite/bag/insertBag"
 import { removeBags } from "./sqlite/bag/removeBag"
-import { selectBagById } from "./sqlite/bag/selectBagById"
 import { getMaxMinBagDate } from "./sqlite/bag/selectBag"
+import { selectBagById } from "./sqlite/bag/selectBagById"
 import { insertClassifications } from "./sqlite/classification/insertClassification"
 import { removeClassifications } from "./sqlite/classification/removeClassification"
 import { insertFellClassifications } from "./sqlite/fellClassification/insertFellClassification"
@@ -15,8 +15,6 @@ import { removeFellClassifications } from "./sqlite/fellClassification/removeFel
 import { insertFells } from "./sqlite/fells/insertFell"
 import { removeFells } from "./sqlite/fells/removeFell"
 import { removeOrphanedFells } from "./sqlite/fells/removeOrphanedFells"
-import { applyDelta } from "./sqlite/sync/syncDelta"
-import type { SyncDelta } from "./sqlite/sync/types"
 import {
   insertPendingSync,
   type NewPendingSync,
@@ -32,6 +30,8 @@ import type {
   FellClassification,
   PendingSync,
 } from "./sqlite/schema"
+import { applyDelta } from "./sqlite/sync/syncDelta"
+import type { SyncDelta } from "./sqlite/sync/types"
 import { getActivities } from "./sqlite/visuals/getActivities"
 import { getSportCounts } from "./sqlite/visuals/getActivityCounts"
 import { getActivityDistanceInDateOrder } from "./sqlite/visuals/getActivityDistanceInDateOrder"
@@ -43,6 +43,8 @@ import { getBagLocationsByClassification } from "./sqlite/visuals/getBagLocation
 import { getBagsByCountry } from "./sqlite/visuals/getBagsByCountry"
 import { getBagsInDateOrder } from "./sqlite/visuals/getBagsInDateOrder"
 import { getFellInfo } from "./sqlite/visuals/getFellInfo"
+import { getPopularFells } from "./sqlite/visuals/getPopularFells"
+import { getRecentActivity } from "./sqlite/visuals/getRecentActivity"
 import type {
   IActivityListItem,
   IGetActivitiesParams,
@@ -58,7 +60,6 @@ import type {
   IGetPopularFells,
   IGetSportCount,
 } from "./types"
-import { getPopularFells } from "./sqlite/visuals/getPopularFells"
 
 export class SQLiteAdapter implements DatabaseAdapter {
   constructor(private db: SQLiteDatabase) {}
@@ -178,6 +179,9 @@ export class SQLiteAdapter implements DatabaseAdapter {
   }
   getActivityInfo(activityId: number): Promise<IGetActivityInfo | undefined> {
     return getActivityInfo(activityId, this.db)
+  }
+  getRecentActivity(): Promise<IActivityListItem | null> {
+    return getRecentActivity(this.db)
   }
 
   async removeBag(bagId: number, request: RequestFn): Promise<void> {

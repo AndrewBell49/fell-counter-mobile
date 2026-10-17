@@ -23,6 +23,7 @@ import {
   SortOrder,
 } from "@/components/activityTab/types"
 import { getActivityEmptyMessage } from "@/components/activityTab/utils"
+import { Divider } from "./utils/Divider"
 
 const PAGE_SIZE = 15
 
@@ -211,7 +212,14 @@ export default function ActivitiesPage() {
       <Animated.FlatList
         data={activities}
         keyExtractor={(item) => String(item.id)}
-        renderItem={({ item }) => <ActivityCard item={item} />}
+        renderItem={({ item, index }) => (
+          <>
+            <ActivityCard item={item} backgroundColour={COLOURS.card} />
+            {index !== activities.length - 1 && (
+              <Divider style={{ margin: 10 }} />
+            )}
+          </>
+        )}
         onScroll={scrollHandler}
         scrollEventThrottle={5}
         ListHeaderComponent={

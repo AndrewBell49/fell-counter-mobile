@@ -1,107 +1,108 @@
 import { COLOURS } from "@/constants/colours"
-import React, { useEffect, useRef, useState } from "react"
-import {
-  Animated,
-  LayoutChangeEvent,
-  Pressable,
-  StyleSheet,
-  View,
-  ViewStyle,
-} from "react-native"
-import { Text } from "./Text"
+import { Ionicons } from "@expo/vector-icons"
+import RNSlider from "@react-native-community/slider"
+import React from "react"
+import { Pressable, StyleSheet, View, ViewStyle } from "react-native"
 
-export interface SliderOption<T> {
-  label: string
-  value: T
-}
-
-interface Props<T> {
-  options: SliderOption<T>[]
-  value: T
-  onChange: (value: T) => void
+export interface SliderProps {
+  value: number
+  minimumValue: number
+  maximumValue: number
+  step?: number
+  onValueChange: (value: number) => void
+  onSlidingComplete?: (value: number) => void
+  minimumTrackTintColor?: string
+  maximumTrackTintColor?: string
+  thumbTintColor?: string
+  disabled?: boolean
+  showButtons?: boolean
+  iconColor?: string
+  disabledIconColor?: string
   style?: ViewStyle
+  sliderStyle?: ViewStyle
 }
 
-const PADDING = 3
+export function Slider({
+  value,
+  minimumValue,
+  maximumValue,
+  step = 1,
+  onValueChange,
+  onSlidingComplete,
+  minimumTrackTintColor = COLOURS.primary,
+  maximumTrackTintColor = COLOURS.border,
+  thumbTintColor = COLOURS.primary,
+  disabled = false,
+  showButtons = true,
+  iconColor = COLOURS.primary,
+  disabledIconColor = COLOURS.border,
+  style,
+  sliderStyle,
+}: SliderProps) {
+  const isAtMin = value <= minimumValue
+  const isAtMax = value >= maximumValue
 
-export function Slider<T>({ options, value, onChange, style }: Props<T>) {
-  const [containerWidth, setContainerWidth] = useState(0)
-  const activeIndex = options.findIndex((opt) => opt.value === value)
-
-  const animValue = useRef(
-    new Animated.Value(activeIndex < 0 ? 0 : activeIndex),
-  ).current
-
-  useEffect(() => {
-    if (activeIndex >= 0) {
-      Animated.spring(animValue, {
-        toValue: activeIndex,
-        bounciness: 6,
-        speed: 12,
-        useNativeDriver: true,
-      }).start()
-    }
-  }, [activeIndex, animValue])
-
-  const handleLayout = (e: LayoutChangeEvent) => {
-    setContainerWidth(e.nativeEvent.layout.width)
+  const handleDecrement = () => {
+    if (disabled || isAtMin) return
+    const nextValue = Math.max(minimumValue, Number((value - step).toFixed(10)))
+    onValueChange(nextValue)
   }
 
-  const availableWidth = Math.max(0, containerWidth - PADDING * 2)
-  const segmentWidth = options.length > 0 ? availableWidth / options.length : 0
-
-  const translateX = animValue.interpolate({
-    inputRange: [0, Math.max(1, options.length - 1)],
-    outputRange: [0, segmentWidth * (options.length - 1)],
-  })
-
-  const handlePress = (pressedValue: T) => {
-    if (pressedValue === value && options.length === 2) {
-      const otherOption = options.find((opt) => opt.value !== value)
-      if (otherOption) {
-        onChange(otherOption.value)
-        return
-      }
-    }
-    onChange(pressedValue)
+  const handleIncrement = () => {
+    if (disabled || isAtMax) return
+    const nextValue = Math.min(maximumValue, Number((value + step).toFixed(10)))
+    onValueChange(nextValue)
   }
 
   return (
-    <View style={[styles.container, style]} onLayout={handleLayout}>
-      {containerWidth > 0 && segmentWidth > 0 && (
-        <Animated.View
-          pointerEvents='none'
-          style={[
-            styles.activeIndicator,
-            {
-              width: segmentWidth,
-              transform: [{ translateX }],
-            },
-          ]}
-        />
+    <View style={[styles.container, style]}>
+      {showButtons && (
+        <Pressable
+          onPress={handleDecrement}
+          disabled={disabled || isAtMin}
+          hitSlop={8}
+          style={({ pressed }) => [
+            styles.button,
+            pressed && !isAtMin && !disabled && styles.buttonPressed,
+          ]}>
+          <Ionicons
+            name='remove-circle-outline'
+            size={22}
+            color={disabled || isAtMin ? disabledIconColor : iconColor}
+          />
+        </Pressable>
       )}
 
-      {options.map((option, index) => {
-        const isActive = index === activeIndex
-        return (
-          <Pressable
-            key={String(option.value)}
-            style={[
-              styles.segment,
-              segmentWidth > 0 && { width: segmentWidth },
-            ]}
-            onPress={() => handlePress(option.value)}>
-            <Text
-              numberOfLines={1}
-              style={[
-                styles.text,
-                isActive ? styles.activeText : styles.inactiveText,
-              ]}>
-              {option.label}
-            </Text>
-          </Pressable>
-        )
-      })}
+      <RNSlider
+        style={[styles.slider, sliderStyle]}
+        value={value}
+        minimumValue={minimumValue}
+        maximumValue={maximumValue}
+        step={step}
+        onValueChange={onValueChange}
+        onSlidingComplete={onSlidingComplete}
+        minimumTrackTintColor={minimumTrackTintColor}
+        maximumTrackTintColor={maximumTrackTintColor}
+        thumbTintColor={thumbTintColor}
+        disabled={disabled}
+      />
+
+      {showButtons && (
+        <Pressable
+          onPress={handleIncrement}
+          disabled={disabled || isAtMax}
+          hitSlop={8}
+          style={({ pressed }) => [
+            styles.button,
+            pressed && !isAtMax && !disabled && styles.buttonPressed,
+          ]}>
+          <Ionicons
+            name='add-circle-outline'
+            size={22}
+            color={disabled || isAtMax ? disabledIconColor : iconColor}
+          />
+        </Pressable>
+      )}
     </View>
   )
 }
@@ -109,42 +110,19 @@ export function Slider<T>({ options, value, onChange, style }: Props<T>) {
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
-    backgroundColor: COLOURS.border,
-    borderRadius: 20,
-    padding: PADDING,
-    marginTop: 16,
-    alignSelf: "center",
-    position: "relative",
-    overflow: "hidden",
-    width: "100%",
-    maxWidth: 340,
-  },
-  activeIndicator: {
-    position: "absolute",
-    top: PADDING,
-    bottom: PADDING,
-    left: PADDING,
-    backgroundColor: COLOURS.graph,
-    borderRadius: 17,
-    zIndex: 0,
-  },
-  segment: {
-    paddingVertical: 8,
-    paddingHorizontal: 8,
     alignItems: "center",
+    width: "100%",
+  },
+  slider: {
+    flex: 1,
+    height: 36,
+  },
+  button: {
+    paddingHorizontal: 4,
     justifyContent: "center",
-    zIndex: 2,
+    alignItems: "center",
   },
-  text: {
-    fontSize: 12,
-    fontWeight: "600",
-    textAlign: "center",
-  },
-  activeText: {
-    color: COLOURS.card,
-  },
-  inactiveText: {
-    color: COLOURS.text,
-    opacity: 0.85,
+  buttonPressed: {
+    opacity: 0.6,
   },
 })

@@ -136,14 +136,14 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   closeButton: {
-    backgroundColor: COLOURS.primary,
+    backgroundColor: COLOURS.cardSecondary,
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 8,
     alignSelf: "flex-end",
   },
   closeButtonText: {
-    color: COLOURS.white,
+    color: COLOURS.text,
     fontWeight: "600",
     fontSize: 14,
   },

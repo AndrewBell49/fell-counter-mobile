@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: COLOURS.card,
+    backgroundColor: COLOURS.cardSecondary,
     borderColor: COLOURS.border,
     borderWidth: 1,
     borderRadius: 24,

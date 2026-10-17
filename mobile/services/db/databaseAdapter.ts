@@ -1,6 +1,5 @@
 import { RequestFn } from "@/hooks/useApi"
 import { NewPendingSync } from "./sqlite/pendingSync/insertPendingSync"
-import { SyncDelta } from "./sqlite/sync/types"
 import type {
   Activity,
   Bag,
@@ -9,6 +8,7 @@ import type {
   FellClassification,
   PendingSync,
 } from "./sqlite/schema"
+import { SyncDelta } from "./sqlite/sync/types"
 import type {
   IActivityListItem,
   IGetActivitiesParams,
@@ -55,6 +55,7 @@ export interface DatabaseAdapter {
   getBagsInDateOrder(): Promise<IGetBagsInDateOrder[]>
   getBagsByCountry(): Promise<IGetCountryBag[]>
   getPopularFells(count: number): Promise<IGetPopularFells[]>
+  getRecentActivity(): Promise<IActivityListItem | null>
 
   // Sport Visuals
   getSportCounts(): Promise<IGetSportCount[]>

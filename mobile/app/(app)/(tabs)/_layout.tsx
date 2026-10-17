@@ -55,19 +55,6 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
-          name='sports'
-          options={{
-            title: "Sports",
-            tabBarIcon: ({ color, size }) => (
-              <Image
-                source={require("@/assets/images/running.png")}
-                style={{ width: size, height: size, tintColor: color }}
-                resizeMode='contain'
-              />
-            ),
-          }}
-        />
-        <Tabs.Screen
           name='activities'
           options={{
             title: "Activities",
@@ -86,6 +73,19 @@ export default function TabLayout() {
             title: "Map",
             tabBarIcon: ({ color }) => (
               <Ionicons size={28} name='map' color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name='sports'
+          options={{
+            title: "Extras",
+            tabBarIcon: ({ color, size }) => (
+              <Image
+                source={require("@/assets/images/magnifying-glass.png")}
+                style={{ width: size, height: size, tintColor: color }}
+                resizeMode='contain'
+              />
             ),
           }}
         />

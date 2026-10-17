@@ -9,6 +9,8 @@ export async function createDatabaseAdapter(): Promise<DatabaseAdapter> {
     return new WebAdapter()
   }
 
+  // await resetDatabase()
+
   const sqlite = await setupDatabase()
 
   return new SQLiteAdapter(sqlite)

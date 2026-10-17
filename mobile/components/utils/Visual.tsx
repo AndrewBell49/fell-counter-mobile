@@ -22,13 +22,17 @@ const styles = StyleSheet.create({
   container: {
     display: "flex",
     justifyContent: "center",
-    borderBlockColor: COLOURS.border,
-    padding: 6,
+    borderColor: COLOURS.border,
+    borderRadius: 15,
+    backgroundColor: COLOURS.card,
+    padding: 10,
     marginVertical: 6,
   },
   title: {
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: 18,
+    fontWeight: "800",
+    textDecorationLine: "underline",
     marginBottom: 8,
+    marginLeft: 5,
   },
 })

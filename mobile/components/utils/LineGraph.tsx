@@ -60,7 +60,9 @@ export function LineGraph({
           tooltip
           theme={{
             background: COLOURS.card,
+            plotBackground: COLOURS.card,
             text: COLOURS.text,
+            mutedText: COLOURS.text,
             series: [COLOURS.graph],
           }}
         />

@@ -51,7 +51,7 @@ export function PieChart({
             data={data}
             valueKey='count'
             labelKey='label'
-            theme={{ background: COLOURS.background }}
+            theme={{ background: COLOURS.transparent }}
             colors={[
               "#2563EB",
               "#DC2626",

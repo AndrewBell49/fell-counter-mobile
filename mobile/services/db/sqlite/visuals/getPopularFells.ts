@@ -14,7 +14,7 @@ export async function getPopularFells(
      LEFT JOIN fells
      ON bags.fell_id = fells.id
      GROUP BY bags.fell_id
-     ORDER BY count DESC
+     ORDER BY count DESC, fells.elevation DESC, fells.name ASC
      LIMIT ?`,
     [count],
   )

@@ -3,7 +3,7 @@ import { IGetBagHeightBoxPlot } from "@/services/db/types"
 import React, { useEffect, useRef, useState } from "react"
 import { Animated, LayoutChangeEvent, StyleSheet, View } from "react-native"
 import { Loading } from "./Loading"
-import { Slider } from "./Slider"
+import { SliderDouble } from "./SliderDouble"
 import { Text } from "./Text"
 import { Visual } from "./Visual"
 
@@ -225,7 +225,7 @@ export function BoxPlot({
         </View>
 
         {onIncludeOutliersChange && (
-          <Slider<boolean>
+          <SliderDouble<boolean>
             options={[
               { label: "No Outliers", value: false },
               { label: "Outliers", value: true },

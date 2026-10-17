@@ -1,3 +1,4 @@
+import { THEME } from "@/constants/colours"
 import { IGetFellLocations } from "@/services/db/types"
 import * as Location from "expo-location"
 import { useFocusEffect, useRouter } from "expo-router"
@@ -260,6 +261,7 @@ export function FellMap({ data }: FellMapProps) {
         provider={PROVIDER_GOOGLE}
         mapType='terrain'
         style={styles.map}
+        userInterfaceStyle={THEME}
         initialRegion={initialRegion}
         showsUserLocation={true}
         showsMyLocationButton={false}

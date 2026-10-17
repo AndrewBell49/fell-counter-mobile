@@ -1,4 +1,4 @@
-import { COLOURS } from "@/constants/colours"
+import { COLOURS, THEME } from "@/constants/colours"
 import polyline from "@mapbox/polyline"
 import React, { useMemo, useRef } from "react"
 import { StyleProp, StyleSheet, View, ViewStyle } from "react-native"
@@ -98,6 +98,7 @@ export const MiniRouteMap = ({
       <MapView
         ref={mapRef}
         style={styles.map}
+        userInterfaceStyle={THEME}
         initialRegion={mapData.initialRegion}
         onMapReady={handleMapReady}
         scrollEnabled={false}
